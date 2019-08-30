@@ -10,82 +10,53 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 -->
 
-[![Version](https://img.shields.io/npm/v/@adobe/adobeio-cna-cloud-storage.svg)](https://npmjs.org/package/@adobe/adobeio-cna-cloud-storage)
-[![Downloads/week](https://img.shields.io/npm/dw/@adobe/adobeio-cna-cloud-storage.svg)](https://npmjs.org/package/@adobe/adobeio-cna-cloud-storage)
-[![Build Status](https://travis-ci.com/adobe/adobeio-cna-cloud-storage.svg?branch=master)](https://travis-ci.com/adobe/adobeio-cna-cloud-storage)
+[![Version](https://img.shields.io/npm/v/@adobe/aio-lib-state.svg)](https://npmjs.org/package/@adobe/aio-lib-state)
+[![Downloads/week](https://img.shields.io/npm/dw/@adobe/aio-lib-state.svg)](https://npmjs.org/package/@adobe/aio-lib-state)
+[![Build Status](https://travis-ci.com/adobe/aio-lib-state.svg?branch=master)](https://travis-ci.com/adobe/aio-lib-state)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/adobeio-cna-cloud-storage/master.svg?style=flat-square)](https://codecov.io/gh/adobe/adobeio-cna-cloud-storage/)
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-state/master.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-state/)
 
-# Adobe I/O CNA Storage SDK
+# Adobe I/O Lib State
 
-A JavaScript abstraction on top of cloud blob storages exposing a file-system like API.
+A JavaScript abstraction on top of distributed/cloud DBs that exposes a simple state persistence API.
 
-You can initialize the SDK with your Adobe I/O Runtime (a.k.a OpenWhisk)
-credentials.
+You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credentials.
 
-Alternatively, you can bring your own cloud storage keys. Note however, that as
-of now we only support Azure Blob Storage. AWS S3 is the next on the todo list
-and will soon be available.
+Alternatively, you can bring your own cloud db keys. As of now we only support Azure Cosmos but AWS Dynamo is the next
+on the todo list and will soon be available.
 
 ## Install
 
 ```bash
-npm install @adobe/adobeio-cna-cloud-storage
+npm install @adobe/aio-lib-state
 ```
 
 ## Use
 
 ```js
-  const storageSDK = require('@adobe/adobeio-cna-cloud-storage')
+  const stateLib = require('@adobe/aio-lib-state')
 
   // init
   // init sdk using OpenWhisk credentials
-  const storage = await storageSDK.init({ ow: { namespace, auth } })
+  // [TEMPORARY tvmApiUrl, not yet deployed to adobeio]
+  const state = await stateLib.init({ ow: { namespace, auth } }, { tvmApiUrl: 'https://mraho.adobeioruntime.net/apis/tvm' })
   // init when env vars __OW_AUTH and __OW_NAMESPACE are set (e.g. when running in an OpenWhisk action)
-  const storage = await storageSDK.init()
-  // or if you want to use your own storage account
-  const storage = await storageSDK.init({ azure: { storageAccount, storageAccessKey, containerName } })
+  const state = await stateLib.init()
+  // or if you want to use your own cloud DB account
+  const state = await stateLib.init({ cosmos: { endpoint, masterKey, databaseId, containerId, partitionKey } })
 
-  // write private file
-  await storage.write('mydir/myfile.txt', 'some private content')
+  // get
+  const value = await state.get('key')
 
-  // write publicly accessible file
-  await storage.write('public/index.html', '<h1>Hello World!</h1>')
+  // put
+  await state.put('key', 'value')
+  await state.put('key', { anObject: 'value' })
 
-  // get file url
-  const props = await storage.getProperties('public/index.html')
-  props.url
+  // delete
+  await state.delete('key')
 
-  // list all files
-  await storage.list('/') // ['mydir/myfile.txt', 'public/index.html']
-
-  // read
-  const buffer = await storage.read('mydir/myfile.txt')
-  buffer.toString() // 'some private content'
-
-  // pipe read stream to local file
-  const rdStream = await storage.createReadStream('mydir/myfile.txt')
-  const stream = rdStream.pipe(fs.createWriteStream('my-local-file.txt'))
-  stream.on('finish', () => console.log('done!'))
-
-  // write read stream to remote file
-  const rdStream = fs.createReadStream('my-local-file.txt')
-  await storage.write('my/remote/file.txt', rdStream)
-
-  // delete files in 'my/remote/' dir
-  await storage.delete('my/remote/')
-  // delete all public files
-  await storage.delete('public/')
-  // delete all files including public
-  await storage.delete('/')
-
-  // copy
-  // upload local directory
-  await storage.copy('my-static-app/', 'public/', { localSrc: true })
-  // download to local directory
-  await storage.copy('public/my-static-app/', 'my-static-app-copy', { localDest: true })
-  // copy files around cloud storage
-  await storage.copy('public/my-static-app/', 'my/private/folder')
+  // list all keys, use wisely => slow O(#keys)
+  const keys = await state.listKeys()
 ```
 
 ## Explore

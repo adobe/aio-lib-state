@@ -3,5 +3,5 @@
     "NodeJS": true
   },
   "plugins": ["jest"],
-  "extends": ["standard", "plugin:jest/recommended", "plugin:jsdoc/recommended"]
+  "extends": ["standard", "plugin:jsdoc/recommended", "plugin:jest/recommended"]
 }

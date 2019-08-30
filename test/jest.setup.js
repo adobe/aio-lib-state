@@ -11,7 +11,7 @@ governing permissions and limitations under the License.
 */
 
 /* eslint-disable jsdoc/require-jsdoc */
-const { KVSError } = require('../lib/KeyValueStoreError')
+const { StateStoreError } = require('../lib/StateStoreError')
 
 process.on('unhandledRejection', error => {
   throw error
@@ -19,8 +19,8 @@ process.on('unhandledRejection', error => {
 
 async function toThrowWithCodeAndMessageContains (received, code, words, checkErrorType = true) {
   function checkErrorCode (e, code) {
-    if (!(e instanceof KVSError)) {
-      return { message: () => `expected error to be instanceof "KVSError", instead received "${e.constructor.name}" with message: "${e.message}"`, pass: false }
+    if (!(e instanceof StateStoreError)) {
+      return { message: () => `expected error to be instanceof "StateStoreError", instead received "${e.constructor.name}" with message: "${e.message}"`, pass: false }
     }
     if (e.code !== code) {
       return { message: () => `expected error code to be "${code}", instead received "${e.code}" with message: "${e.message}"`, pass: false }
@@ -51,9 +51,9 @@ async function toThrowWithCodeAndMessageContains (received, code, words, checkEr
 }
 expect.extend({
   toThrowWithCodeAndMessageContains,
-  toThrowBadArgWithMessageContaining: (received, words, checkErrorType = true) => toThrowWithCodeAndMessageContains(received, KVSError.codes.BadArgument, words, checkErrorType),
-  toThrowForbidden: (received) => toThrowWithCodeAndMessageContains(received, KVSError.codes.Forbidden, ['forbidden', 'credentials']),
-  toThrowInternalWithStatus: (received, status) => toThrowWithCodeAndMessageContains(received, KVSError.codes.Internal, ['' + status, 'unknown']),
-  toThrowInternal: (received) => toThrowWithCodeAndMessageContains(received, KVSError.codes.Internal, ['unknown']),
-  toThrowNotImplemented: (received, methodName) => toThrowWithCodeAndMessageContains(received, KVSError.codes.NotImplemented, ['not implemented', methodName])
+  toThrowBadArgWithMessageContaining: (received, words, checkErrorType = true) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.BadArgument, words, checkErrorType),
+  toThrowForbidden: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Forbidden, ['forbidden', 'credentials']),
+  toThrowInternalWithStatus: (received, status) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['' + status, 'unknown']),
+  toThrowInternal: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['unknown']),
+  toThrowNotImplemented: (received, methodName) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.NotImplemented, ['not implemented', methodName])
 })
