@@ -60,6 +60,16 @@ npm install @adobe/aio-lib-state
 
 `goto` [API](doc/api.md)
 
+### Adobe I/O State Store Limitations (per user)
+
+Apply when init with OW credentials (and not own cloud DB credentials):
+
+- Max state value size: `2MB`
+- Max state key size: `1024 bytes`
+- Max total state size: `10 GB`
+- Token expiry (need to re-init after expiry): `1 hour`
+- Consistency: `Session Consistency (CosmosDB)`
+
 ## Contributing
 
 Contributions are welcomed! Read the [Contributing Guide](./.github/CONTRIBUTING.md) for more information.
