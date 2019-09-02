@@ -24,7 +24,7 @@ const TvmClient = require('@adobe/adobeio-cna-tvm-client')
  *
  * OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH`).
  *
- * @param {object} credentials used to init the sdk
+ * @param {object} [credentials={}] used to init the sdk
  *
  * @param {module:types~OpenWhiskCredentials} [credentials.ow]
  * {@link module:types~OpenWhiskCredentials}. Set those if you want
@@ -43,7 +43,7 @@ const TvmClient = require('@adobe/adobeio-cna-tvm-client')
  * @returns {Promise<StateStore>} A StateStore instance
  * @throws {StateStoreError}
  */
-async function init (credentials, options) {
+async function init (credentials = {}, options = {}) {
   // 1. set provider
   const provider = 'cosmos' // only cosmos is supported for now
 
