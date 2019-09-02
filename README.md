@@ -60,7 +60,7 @@ npm install @adobe/aio-lib-state
 
 `goto` [API](doc/api.md)
 
-### Adobe I/O State Store Limitations (per user)
+## Adobe I/O State Store Limitations (per user)
 
 Apply when init with OW credentials (and not own cloud DB credentials):
 
