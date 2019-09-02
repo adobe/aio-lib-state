@@ -94,7 +94,6 @@ Cloud State Management
     * *[.get(key)](#StateStore+get) ⇒ <code>Promise.&lt;any&gt;</code>*
     * *[.put(key, value)](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
-    * *[.listKeys()](#StateStore+listKeys) ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code>*
 
 <a name="StateStore+get"></a>
 
@@ -134,15 +133,6 @@ Deletes a state key-value pair
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 
-<a name="StateStore+listKeys"></a>
-
-### *stateStore.listKeys() ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code>*
-List all existing state keys.
-
-Use wisely as this is a slow operation => o(n)
-
-**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
-**Returns**: <code>Promise.&lt;Array.&lt;string&gt;&gt;</code> - list of keys  
 <a name="StateStoreError"></a>
 
 ## StateStoreError ⇐ <code>Error</code>
@@ -186,7 +176,6 @@ StateStoreError codes
 | NotImplemented | <code>string</code> | <code>&quot;NotImplemented&quot;</code> | 
 | BadArgument | <code>string</code> | <code>&quot;BadArgument&quot;</code> | 
 | Forbidden | <code>string</code> | <code>&quot;Forbidden&quot;</code> | 
-| KeyNotFound | <code>string</code> | <code>&quot;KeyNotFound&quot;</code> | 
 
 <a name="init"></a>
 
