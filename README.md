@@ -50,13 +50,10 @@ npm install @adobe/aio-lib-state
 
   // put
   await state.put('key', 'value')
-  await state.put('key', { anObject: 'value' })
+  await state.put('key', { anObject: 'value' }, { ttl: -1 }) // -1 for no expiry, defaults to 86400 (24 hours)
 
   // delete
   await state.delete('key')
-
-  // list all keys, use wisely => slow O(#keys)
-  const keys = await state.listKeys()
 ```
 
 ## Explore
