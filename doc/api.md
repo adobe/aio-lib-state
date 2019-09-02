@@ -37,6 +37,7 @@
     * [~OpenWhiskCredentials](#module_types..OpenWhiskCredentials) : <code>object</code>
     * [~AzureCosmosPartitionResourceCredentials](#module_types..AzureCosmosPartitionResourceCredentials) : <code>object</code>
     * [~AzureCosmosMasterCredentials](#module_types..AzureCosmosMasterCredentials) : <code>object</code>
+    * [~StateStorePutOptions](#module_types..StateStorePutOptions) : <code>object</code>
 
 <a name="module_types..OpenWhiskCredentials"></a>
 
@@ -83,6 +84,18 @@ An object holding the Azure Cosmos account master key
 | containerId | <code>string</code> | id for cosmosdb container within database |
 | partitionKey | <code>string</code> | key for cosmosdb partition where data will be stored |
 
+<a name="module_types..StateStorePutOptions"></a>
+
+### types~StateStorePutOptions : <code>object</code>
+StateStore put options
+
+**Kind**: inner typedef of [<code>types</code>](#module_types)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A value of 0 sets default. |
+
 <a name="StateStore"></a>
 
 ## *StateStore*
@@ -92,7 +105,7 @@ Cloud State Management
 
 * *[StateStore](#StateStore)*
     * *[.get(key)](#StateStore+get) ⇒ <code>Promise.&lt;any&gt;</code>*
-    * *[.put(key, value)](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[.put(key, value, options)](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
 <a name="StateStore+get"></a>
@@ -110,7 +123,7 @@ If the key doesn't exist returns undefined.
 
 <a name="StateStore+put"></a>
 
-### *stateStore.put(key, value) ⇒ <code>Promise.&lt;string&gt;</code>*
+### *stateStore.put(key, value, options) ⇒ <code>Promise.&lt;string&gt;</code>*
 Creates or updates a state key-value pair
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
@@ -120,6 +133,7 @@ Creates or updates a state key-value pair
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 | value | <code>any</code> | state value |
+| options | [<code>StateStorePutOptions</code>](#module_types..StateStorePutOptions) | put options |
 
 <a name="StateStore+delete"></a>
 
@@ -199,9 +213,9 @@ OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | credentials | <code>object</code> |  | used to init the sdk |
-| [credentials.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access a the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH` |
+| [credentials.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_AUTH` |
 | [credentials.cosmos] | [<code>AzureCosmosMasterCredentials</code>](#module_types..AzureCosmosMasterCredentials) \| [<code>AzureCosmosPartitionResourceCredentials</code>](#module_types..AzureCosmosPartitionResourceCredentials) |  | [Azure Cosmos resource credentials](#module_types..AzureCosmosPartitionResourceCredentials) or [Azure Cosmos account credentials](#module_types..AzureCosmosMasterCredentials) |
 | [options] | <code>object</code> | <code>{}</code> | options |
-| [options.tvmApiUrl] | <code>string</code> |  | alternative tvm api url. Only makes sense in the context of OpenWhisk credentials. |
-| [options.tvmCacheFile] | <code>string</code> |  | alternative tvm cache file, defaults to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only makes sense in the context of OpenWhisk credentials. |
+| [options.tvmApiUrl] | <code>string</code> |  | alternative tvm api url. Only applies in the context of OpenWhisk credentials. |
+| [options.tvmCacheFile] | <code>string</code> |  | alternative tvm cache file, defaults to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only applies in the context of OpenWhisk credentials. |
 
