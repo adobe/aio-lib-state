@@ -9,8 +9,6 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-const joi = require('@hapi/joi')
-
 const { CosmosStateStore } = require('./lib/impl/CosmosStateStore')
 const { StateStoreError } = require('./lib/StateStoreError')
 const { StateStore } = require('./lib/StateStore')
@@ -30,73 +28,32 @@ const TvmClient = require('@adobe/adobeio-cna-tvm-client')
  *
  * @param {module:types~OpenWhiskCredentials} [credentials.ow]
  * {@link module:types~OpenWhiskCredentials}. Set those if you want
- * to use ootb credentials to access a the state management service. OpenWhisk
+ * to use ootb credentials to access the state management service. OpenWhisk
  * namespace and auth can also be passed through environment variables:
- * `OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH`
+ * `__OW_NAMESPACE` and `__OW_AUTH`
  *
  * @param {module:types~AzureCosmosMasterCredentials|module:types~AzureCosmosPartitionResourceCredentials} [credentials.cosmos]
  * [Azure Cosmos resource credentials]{@link module:types~AzureCosmosPartitionResourceCredentials} or
  * [Azure Cosmos account credentials]{@link module:types~AzureCosmosMasterCredentials}
  *
  * @param {object} [options={}] options
- * @param {string} [options.tvmApiUrl] alternative tvm api url. Only makes
- * sense in the context of OpenWhisk credentials.
+ * @param {string} [options.tvmApiUrl] alternative tvm api url. Only applies in the context of OpenWhisk credentials.
  * @param {string} [options.tvmCacheFile] alternative tvm cache file, defaults
- * to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only makes
- * sense in the context of OpenWhisk credentials.
+ * to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only applies in the context of OpenWhisk credentials.
  * @returns {Promise<StateStore>} A StateStore instance
  * @throws {StateStoreError}
  */
-async function init (credentials, options = {}) {
-  // todo in tvm client?
-  // include ow environment vars to credentials
-  const namespace = process.env['__OW_NAMESPACE'] || process.env['OW_NAMESPACE']
-  const auth = process.env['__OW_AUTH'] || process.env['OW_AUTH']
-  if (namespace || auth) {
-    if (typeof credentials !== 'object') {
-      credentials = {}
-    }
-    if (typeof credentials.ow !== 'object') {
-      credentials.ow = {}
-    }
-    credentials.ow.namespace = credentials.ow.namespace || namespace
-    credentials.ow.auth = credentials.ow.auth || auth
-  }
-
-  return _init(credentials, options)
-}
-
-// eslint-disable-next-line jsdoc/require-jsdoc
-async function _init (credentials, options) {
-  const validation = joi.validate(credentials, joi.object().label('credentials').keys({
-    cosmos: joi.object().keys({
-      // either
-      resourceToken: joi.string(),
-      // or
-      masterKey: joi.string(),
-      // for both
-      endpoint: joi.string().required(),
-      databaseId: joi.string().required(),
-      containerId: joi.string().required(),
-      partitionKey: joi.string().required()
-    }).unknown().xor('masterKey', 'resourceToken'),
-    ow: joi.object().keys({
-      namespace: joi.string().required(),
-      auth: joi.string().required()
-    })
-  }).unknown().xor('ow', 'cosmos').required())
-  if (validation.error) throw new StateStoreError(validation.error.message, StateStoreError.codes.BadArgument)
-
+async function init (credentials, options) {
   // 1. set provider
   const provider = 'cosmos' // only cosmos is supported for now
 
   // 2. instantiate tvm if ow credentials
   let tvm
-  if (credentials.ow && !credentials.cosmos) {
+  if (!credentials.cosmos) { // credentials.ow can be empty if env vars are set
     // default tvm url
     const tvmArgs = { ow: credentials.ow, apiUrl: options.tvmApiUrl }
     if (options.tvmCacheFile) tvmArgs.cacheFile = options.tvmCacheFile
-    tvm = new TvmClient(tvmArgs)
+    tvm = await TvmClient.init(tvmArgs)
   }
 
   // 3. return state store based on provider
