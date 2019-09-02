@@ -19,12 +19,12 @@
 ## Functions
 
 <dl>
-<dt><a href="#init">init(credentials, [options])</a> ⇒ <code><a href="#StateStore">Promise.&lt;StateStore&gt;</a></code></dt>
+<dt><a href="#init">init([config])</a> ⇒ <code><a href="#StateStore">Promise.&lt;StateStore&gt;</a></code></dt>
 <dd><p>Initializes and returns the key-value-store SDK.</p>
 <p>To use the SDK you must either provide your
 <a href="#module_types..OpenWhiskCredentials">OpenWhisk credentials</a> in
-<code>credentials.ow</code> or your own
-<a href="#module_types..AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>credentials.cosmos</code>.</p>
+<code>config.ow</code> or your own
+<a href="#module_types..AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>config.cosmos</code>.</p>
 <p>OpenWhisk credentials can also be read from environment variables (<code>OW_NAMESPACE</code> or <code>__OW_NAMESPACE</code> and <code>OW_AUTH</code> or <code>__OW_AUTH</code>).</p>
 </dd>
 </dl>
@@ -105,7 +105,7 @@ Cloud State Management
 
 * *[StateStore](#StateStore)*
     * *[.get(key)](#StateStore+get) ⇒ <code>Promise.&lt;any&gt;</code>*
-    * *[.put(key, value, options)](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
 <a name="StateStore+get"></a>
@@ -123,17 +123,17 @@ If the key doesn't exist returns undefined.
 
 <a name="StateStore+put"></a>
 
-### *stateStore.put(key, value, options) ⇒ <code>Promise.&lt;string&gt;</code>*
+### *stateStore.put(key, value, [options]) ⇒ <code>Promise.&lt;string&gt;</code>*
 Creates or updates a state key-value pair
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - key  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| key | <code>string</code> | state key identifier |
-| value | <code>any</code> | state value |
-| options | [<code>StateStorePutOptions</code>](#module_types..StateStorePutOptions) | put options |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| key | <code>string</code> |  | state key identifier |
+| value | <code>any</code> |  | state value |
+| [options] | [<code>StateStorePutOptions</code>](#module_types..StateStorePutOptions) | <code>{}</code> | put options |
 
 <a name="StateStore+delete"></a>
 
@@ -190,16 +190,17 @@ StateStoreError codes
 | NotImplemented | <code>string</code> | <code>&quot;NotImplemented&quot;</code> | 
 | BadArgument | <code>string</code> | <code>&quot;BadArgument&quot;</code> | 
 | Forbidden | <code>string</code> | <code>&quot;Forbidden&quot;</code> | 
+| PayloadTooLarge | <code>string</code> | <code>&quot;PayloadTooLarge&quot;</code> | 
 
 <a name="init"></a>
 
-## init(credentials, [options]) ⇒ [<code>Promise.&lt;StateStore&gt;</code>](#StateStore)
+## init([config]) ⇒ [<code>Promise.&lt;StateStore&gt;</code>](#StateStore)
 Initializes and returns the key-value-store SDK.
 
 To use the SDK you must either provide your
 [OpenWhisk credentials](#module_types..OpenWhiskCredentials) in
-`credentials.ow` or your own
-[Azure Cosmos credentials](#module_types..AzureCosmosMasterCredentials) in `credentials.cosmos`.
+`config.ow` or your own
+[Azure Cosmos credentials](#module_types..AzureCosmosMasterCredentials) in `config.cosmos`.
 
 OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH`).
 
@@ -212,10 +213,10 @@ OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| credentials | <code>object</code> |  | used to init the sdk |
-| [credentials.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_AUTH` |
-| [credentials.cosmos] | [<code>AzureCosmosMasterCredentials</code>](#module_types..AzureCosmosMasterCredentials) \| [<code>AzureCosmosPartitionResourceCredentials</code>](#module_types..AzureCosmosPartitionResourceCredentials) |  | [Azure Cosmos resource credentials](#module_types..AzureCosmosPartitionResourceCredentials) or [Azure Cosmos account credentials](#module_types..AzureCosmosMasterCredentials) |
-| [options] | <code>object</code> | <code>{}</code> | options |
-| [options.tvmApiUrl] | <code>string</code> |  | alternative tvm api url. Only applies in the context of OpenWhisk credentials. |
-| [options.tvmCacheFile] | <code>string</code> |  | alternative tvm cache file, defaults to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only applies in the context of OpenWhisk credentials. |
+| [config] | <code>object</code> | <code>{}</code> | used to init the sdk |
+| [config.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_AUTH` |
+| [config.cosmos] | [<code>AzureCosmosMasterCredentials</code>](#module_types..AzureCosmosMasterCredentials) \| [<code>AzureCosmosPartitionResourceCredentials</code>](#module_types..AzureCosmosPartitionResourceCredentials) |  | [Azure Cosmos resource credentials](#module_types..AzureCosmosPartitionResourceCredentials) or [Azure Cosmos account credentials](#module_types..AzureCosmosMasterCredentials) |
+| [config.tvm] | <code>object</code> |  | tvm configuration, applies only when passing OpenWhisk credentials |
+| [config.tvm.apiUrl] | <code>string</code> |  | alternative tvm api url. |
+| [config.tvm.cacheFile] | <code>string</code> |  | alternative tvm cache file, set to `false` to disable caching of temporary credentials. |
 

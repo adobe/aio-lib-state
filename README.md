@@ -39,7 +39,7 @@ npm install @adobe/aio-lib-state
   // init
   // init sdk using OpenWhisk credentials
   // [TEMPORARY tvmApiUrl, not yet deployed to adobeio]
-  const state = await stateLib.init({ ow: { namespace, auth } }, { tvmApiUrl: 'https://mraho.adobeioruntime.net/apis/tvm' })
+  const state = await stateLib.init({ ow: { namespace, auth }, tvm: { apiUrl: 'https://mraho.adobeioruntime.net/apis/tvm' } })
   // init when env vars __OW_AUTH and __OW_NAMESPACE are set (e.g. when running in an OpenWhisk action)
   const state = await stateLib.init()
   // or if you want to use your own cloud DB account

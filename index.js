@@ -19,47 +19,44 @@ const TvmClient = require('@adobe/adobeio-cna-tvm-client')
  *
  * To use the SDK you must either provide your
  * [OpenWhisk credentials]{@link module:types~OpenWhiskCredentials} in
- * `credentials.ow` or your own
- * [Azure Cosmos credentials]{@link module:types~AzureCosmosMasterCredentials} in `credentials.cosmos`.
+ * `config.ow` or your own
+ * [Azure Cosmos credentials]{@link module:types~AzureCosmosMasterCredentials} in `config.cosmos`.
  *
  * OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH`).
  *
- * @param {object} [credentials={}] used to init the sdk
+ * @param {object} [config={}] used to init the sdk
  *
- * @param {module:types~OpenWhiskCredentials} [credentials.ow]
+ * @param {module:types~OpenWhiskCredentials} [config.ow]
  * {@link module:types~OpenWhiskCredentials}. Set those if you want
  * to use ootb credentials to access the state management service. OpenWhisk
  * namespace and auth can also be passed through environment variables:
  * `__OW_NAMESPACE` and `__OW_AUTH`
  *
- * @param {module:types~AzureCosmosMasterCredentials|module:types~AzureCosmosPartitionResourceCredentials} [credentials.cosmos]
+ * @param {module:types~AzureCosmosMasterCredentials|module:types~AzureCosmosPartitionResourceCredentials} [config.cosmos]
  * [Azure Cosmos resource credentials]{@link module:types~AzureCosmosPartitionResourceCredentials} or
  * [Azure Cosmos account credentials]{@link module:types~AzureCosmosMasterCredentials}
  *
- * @param {object} [options={}] options
- * @param {string} [options.tvmApiUrl] alternative tvm api url. Only applies in the context of OpenWhisk credentials.
- * @param {string} [options.tvmCacheFile] alternative tvm cache file, defaults
- * to `<tmpfolder>/.tvmCache`. Set to `false` to disable caching. Only applies in the context of OpenWhisk credentials.
+ * @param {object} [config.tvm] tvm configuration, applies only when passing OpenWhisk credentials
+ * @param {string} [config.tvm.apiUrl] alternative tvm api url.
+ * @param {string} [config.tvm.cacheFile] alternative tvm cache file, set to `false` to disable caching of temporary credentials.
  * @returns {Promise<StateStore>} A StateStore instance
  * @throws {StateStoreError}
  */
-async function init (credentials = {}, options = {}) {
+async function init (config = {}) {
   // 1. set provider
   const provider = 'cosmos' // only cosmos is supported for now
 
   // 2. instantiate tvm if ow credentials
   let tvm
-  if (!credentials.cosmos) { // credentials.ow can be empty if env vars are set
-    // default tvm url
-    const tvmArgs = { ow: credentials.ow, apiUrl: options.tvmApiUrl }
-    if (options.tvmCacheFile) tvmArgs.cacheFile = options.tvmCacheFile
+  if (!config.cosmos) { // credentials.ow can be empty if env vars are set
+    const tvmArgs = { ow: config.ow, ...config.tvm }
     tvm = await TvmClient.init(tvmArgs)
   }
 
   // 3. return state store based on provider
   switch (provider) {
     case 'cosmos':
-      return CosmosStateStore.init(credentials.cosmos || (await tvm.getAzureCosmosCredentials()))
+      return CosmosStateStore.init(config.cosmos || (await tvm.getAzureCosmosCredentials()))
     // default:
     //   throw new StateStoreError(`provider '${provider}' is not supported.`, StateStoreError.codes.BadArgument)
   }
