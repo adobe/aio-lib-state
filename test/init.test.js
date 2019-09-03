@@ -1,4 +1,4 @@
-const stateStoreSDK = require('../index')
+const stateLib = require('../index')
 
 const { CosmosStateStore } = require('../lib/impl/CosmosStateStore')
 jest.mock('../lib/impl/CosmosStateStore.js')
@@ -23,7 +23,7 @@ describe('init', () => {
       fake: 'cosmosconfig'
     }
     test('with cosmos config', async () => {
-      await stateStoreSDK.init({ cosmos: fakeCosmosConfig })
+      await stateLib.init({ cosmos: fakeCosmosConfig })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeCosmosConfig)
       expect(TvmClient.init).toHaveBeenCalledTimes(0)
@@ -52,7 +52,7 @@ describe('init', () => {
     })
     test('when tvm options', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
-      await stateStoreSDK.init({ ow: fakeOWCreds, tvm: fakeTVMOptions })
+      await stateLib.init({ ow: fakeOWCreds, tvm: fakeTVMOptions })
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: fakeOWCreds, ...fakeTVMOptions })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
@@ -60,7 +60,7 @@ describe('init', () => {
     })
     test('when empty config to be able to pass OW creds as env variables', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
-      await stateStoreSDK.init()
+      await stateLib.init()
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: undefined })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
@@ -68,17 +68,17 @@ describe('init', () => {
     })
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
       cosmosTVMMock.mockRejectedValue({ status: 401 })
-      await expect(stateStoreSDK.init.bind(stateStoreSDK, { ow: fakeOWCreds })).toThrowForbidden()
+      await expect(stateLib.init.bind(stateLib, { ow: fakeOWCreds })).toThrowForbidden()
     })
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
       cosmosTVMMock.mockRejectedValue({ status: 403 })
-      await expect(stateStoreSDK.init.bind(stateStoreSDK, { ow: fakeOWCreds })).toThrowForbidden()
+      await expect(stateLib.init.bind(stateLib, { ow: fakeOWCreds })).toThrowForbidden()
     })
     test('when tvm rejects with another status code (throws tvm error)', async () => {
       const tvmError = new Error({ status: 500 })
       cosmosTVMMock.mockRejectedValue(tvmError)
       try {
-        await stateStoreSDK.init({ ow: fakeOWCreds })
+        await stateLib.init({ ow: fakeOWCreds })
       } catch (e) {
         expect(e).toBe(tvmError)
       }
