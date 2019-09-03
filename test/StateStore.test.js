@@ -51,14 +51,19 @@ describe('put', () => {
     await expect(state.put.bind(state, 'key', 'value', { nonexiting__option: 'value' })).toThrowBadArgWithMessageContaining(['nonexiting__option', 'not allowed'])
     await expect(state.put.bind(state, 'key', 'value', { ttl: 'value' })).toThrowBadArgWithMessageContaining(['ttl', 'number'])
   })
-  test('calls _put with default ttl (part of interface)', async () => {
+  test('calls _put with default ttl when options is undefined or options.ttl is = 0', async () => {
     const state = new StateStore(true)
     state._put = jest.fn()
     await state.put('key', 'value')
     expect(state._put).toHaveBeenCalledTimes(1)
     expect(state._put).toHaveBeenCalledWith('key', 'value', { ttl: StateStore.DefaultTTL })
+
+    state._put.mockReset()
+    await state.put('key', 'value', { ttl: 0 })
+    expect(state._put).toHaveBeenCalledTimes(1)
+    expect(state._put).toHaveBeenCalledWith('key', 'value', { ttl: StateStore.DefaultTTL })
   })
-  test('calls _put with custom ttl (part of interface)', async () => {
+  test('calls _put with custom ttl when options.ttl is set', async () => {
     const state = new StateStore(true)
     state._put = jest.fn()
     await state.put('key', 'value', { ttl: 99 })

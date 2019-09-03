@@ -53,7 +53,8 @@ expect.extend({
   toThrowWithCodeAndMessageContains,
   toThrowBadArgWithMessageContaining: (received, words, checkErrorType = true) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.BadArgument, words, checkErrorType),
   toThrowForbidden: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Forbidden, ['forbidden', 'credentials']),
-  toThrowInternalWithStatus: (received, status) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['' + status, 'unknown']),
+  toThrowInternalWithStatus: (received, status) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['' + status]),
   toThrowInternal: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['unknown']),
-  toThrowNotImplemented: (received, methodName) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.NotImplemented, ['not implemented', methodName])
+  toThrowNotImplemented: (received, methodName) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.NotImplemented, ['not implemented', methodName]),
+  toThrowTooLarge: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.PayloadTooLarge, ['payload is too large'])
 })
