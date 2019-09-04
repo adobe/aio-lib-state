@@ -69,6 +69,7 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 - Max total state size: `10 GB`
 - Token expiry (need to re-init after expiry): `1 hour`
 - Consistency: `Session Consistency (CosmosDB)`
+- Namespace max length: `49 characters`
 
 ## Contributing
 
