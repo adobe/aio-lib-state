@@ -25,7 +25,7 @@
 <a href="#module_types..OpenWhiskCredentials">OpenWhisk credentials</a> in
 <code>config.ow</code> or your own
 <a href="#module_types..AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>config.cosmos</code>.</p>
-<p>OpenWhisk credentials can also be read from environment variables (<code>OW_NAMESPACE</code> or <code>__OW_NAMESPACE</code> and <code>OW_AUTH</code> or <code>__OW_AUTH</code>).</p>
+<p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_AUTH</code>.</p>
 </dd>
 </dl>
 
@@ -202,7 +202,7 @@ To use the SDK you must either provide your
 `config.ow` or your own
 [Azure Cosmos credentials](#module_types..AzureCosmosMasterCredentials) in `config.cosmos`.
 
-OpenWhisk credentials can also be read from environment variables (`OW_NAMESPACE` or `__OW_NAMESPACE` and `OW_AUTH` or `__OW_AUTH`).
+OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_AUTH`.
 
 **Kind**: global function  
 **Returns**: [<code>Promise.&lt;StateStore&gt;</code>](#StateStore) - A StateStore instance  
