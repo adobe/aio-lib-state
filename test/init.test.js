@@ -15,8 +15,8 @@ const stateLib = require('../index')
 const { CosmosStateStore } = require('../lib/impl/CosmosStateStore')
 jest.mock('../lib/impl/CosmosStateStore.js')
 
-const TvmClient = require('@adobe/adobeio-cna-tvm-client')
-jest.mock('@adobe/adobeio-cna-tvm-client')
+const TvmClient = require('@adobe/aio-lib-tvm')
+jest.mock('@adobe/aio-lib-tvm')
 
 beforeEach(async () => {
   expect.hasAssertions()

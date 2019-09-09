@@ -44,7 +44,7 @@
     "jsdoc-to-markdown": "^5.0.0"
   },
   "dependencies": {
-    "@adobe/adobeio-cna-tvm-client": "^0.3.0",
+    "@adobe/aio-lib-tvm": "^0.4.0",
     "@azure/cosmos": "^3.2.0",
     "@hapi/joi": "^15.1.0"
   }
