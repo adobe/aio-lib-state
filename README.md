@@ -22,8 +22,7 @@ A JavaScript abstraction on top of distributed/cloud DBs that exposes a simple s
 
 You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credentials.
 
-Alternatively, you can bring your own cloud db keys. As of now we only support Azure Cosmos but AWS Dynamo is the next
-on the todo list and will soon be available.
+Alternatively, you can bring your own cloud db keys. As of now we only support Azure Cosmos.
 
 ## Install
 
