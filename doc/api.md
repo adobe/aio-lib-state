@@ -26,15 +26,6 @@
 </dd>
 </dl>
 
-## Typedefs
-
-<dl>
-<dt><a href="#StateLibErrors">StateLibErrors</a> : <code>object</code></dt>
-<dd><p>State lib custom errors.</p>
-<p><code>e.sdkDetails</code> provides additional context for each error (e.g. function parameter)</p>
-</dd>
-</dl>
-
 <a name="module_types"></a>
 
 ## types
@@ -44,6 +35,7 @@
     * [~AzureCosmosPartitionResourceCredentials](#module_types..AzureCosmosPartitionResourceCredentials) : <code>object</code>
     * [~AzureCosmosMasterCredentials](#module_types..AzureCosmosMasterCredentials) : <code>object</code>
     * [~StateStorePutOptions](#module_types..StateStorePutOptions) : <code>object</code>
+    * [~StateLibErrors](#module_types..StateLibErrors) : <code>object</code>
 
 <a name="module_types..OpenWhiskCredentials"></a>
 
@@ -101,6 +93,24 @@ StateStore put options
 | Name | Type | Description |
 | --- | --- | --- |
 | ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A value of 0 sets default. |
+
+<a name="module_types..StateLibErrors"></a>
+
+### types~StateLibErrors : <code>object</code>
+State lib custom errors.
+
+`e.sdkDetails` provides additional context for each error (e.g. function parameter)
+
+**Kind**: inner typedef of [<code>types</code>](#module_types)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ERROR_BAD_ARGUMENT | <code>StateLibError</code> | this error is thrown when an argument is missing or has invalid type |
+| ERROR_NOT_IMPLEMENTED | <code>StateLibError</code> | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
+| ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
+| ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |
+| ERROR_INTERNAL | <code>StateLibError</code> | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
 
 <a name="StateStore"></a>
 
@@ -167,10 +177,6 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 
 **Kind**: global function  
 **Returns**: [<code>Promise.&lt;StateStore&gt;</code>](#StateStore) - A StateStore instance  
-**Throws**:
-
-- <code>codes.BAD\_CREDENTIALS</code><code>codes.BAD\_ARGUMENT</code> 
-
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -180,22 +186,4 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | [config.tvm] | <code>object</code> |  | tvm configuration, applies only when passing OpenWhisk credentials |
 | [config.tvm.apiUrl] | <code>string</code> |  | alternative tvm api url. |
 | [config.tvm.cacheFile] | <code>string</code> |  | alternative tvm cache file, set to `false` to disable caching of temporary credentials. |
-
-<a name="StateLibErrors"></a>
-
-## StateLibErrors : <code>object</code>
-State lib custom errors.
-
-`e.sdkDetails` provides additional context for each error (e.g. function parameter)
-
-**Kind**: global typedef  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| ERROR_BAD_ARGUMENT | <code>StateLibError</code> | this error is thrown when an argument is missing or has invalid type |
-| ERROR_NOT_IMPLEMENTED | <code>StateLibError</code> | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
-| ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
-| ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |
-| ERROR_INTERNAL | <code>StateLibError</code> | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
 
