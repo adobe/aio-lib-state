@@ -20,24 +20,24 @@ beforeEach(() => {
 
 describe('init', () => {
   test('missing implementation', async () => {
-    await expect(StateStore.init.bind(StateStore)).toThrowNotImplemented('init')
+    await global.expectToThrowNotImplemented(StateStore.init.bind(StateStore), 'init')
   })
 })
 
 describe('constructor', () => {
   test('missing implementation', async () => {
-    await expect(() => new StateStore(false)).toThrowNotImplemented('StateStore')
+    await global.expectToThrowNotImplemented(() => new StateStore(false), 'StateStore')
   })
 })
 
 describe('get', () => {
   test('missing implementation', async () => {
     const state = new StateStore(true)
-    await expect(state.get.bind(state, 'key')).toThrowNotImplemented('_get')
+    await global.expectToThrowNotImplemented(state.get.bind(state, 'key'), '_get')
   })
   test('bad key type', async () => {
     const state = new StateStore(true)
-    await expect(state.get.bind(state, 123)).toThrowBadArgWithMessageContaining(['string', 'key'])
+    await global.expectToThrowBadArg(state.get.bind(state, 123), ['string', 'key'], { key: 123 })
   })
   test('calls _get (part of interface)', async () => {
     const state = new StateStore(true)
@@ -51,17 +51,18 @@ describe('get', () => {
 describe('put', () => {
   test('missing implementation', async () => {
     const state = new StateStore(true)
-    await expect(state.put.bind(state, 'key', 'value')).toThrowNotImplemented('_put')
+    await global.expectToThrowNotImplemented(state.put.bind(state, 'key', 'value'), '_put')
   })
   test('bad key type', async () => {
     const state = new StateStore(true)
-    await expect(state.put.bind(state, 123)).toThrowBadArgWithMessageContaining(['string', 'key'])
+    await global.expectToThrowBadArg(state.put.bind(state, 123, 'value', {}), ['string', 'key'], { key: 123, value: 'value', options: {} })
   })
   test('bad options', async () => {
     const state = new StateStore(true)
-    await expect(state.put.bind(state, 'key', 'value', 'options')).toThrowBadArgWithMessageContaining(['options', 'object'])
-    await expect(state.put.bind(state, 'key', 'value', { nonexiting__option: 'value' })).toThrowBadArgWithMessageContaining(['nonexiting__option', 'not allowed'])
-    await expect(state.put.bind(state, 'key', 'value', { ttl: 'value' })).toThrowBadArgWithMessageContaining(['ttl', 'number'])
+    const expectedDetails = { key: 'key', value: 'value' }
+    await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', 'options'), ['object', 'options'], { ...expectedDetails, options: 'options' })
+    await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { nonexiting__option: 'value' }), ['nonexiting__option', 'not allowed'], { ...expectedDetails, options: { nonexiting__option: 'value' } })
+    await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { ttl: 'value' }), ['ttl', 'number'], { ...expectedDetails, options: { ttl: 'value' } })
   })
   test('calls _put with default ttl when options is undefined or options.ttl is = 0', async () => {
     const state = new StateStore(true)
@@ -87,11 +88,11 @@ describe('put', () => {
 describe('delete', () => {
   test('missing implementation', async () => {
     const state = new StateStore(true)
-    await expect(state.delete.bind(state, 'key')).toThrowNotImplemented('_delete')
+    await global.expectToThrowNotImplemented(state.delete.bind(state, 'key'), '_delete')
   })
   test('bad key type', async () => {
     const state = new StateStore(true)
-    await expect(state.delete.bind(state, 123)).toThrowBadArgWithMessageContaining(['string', 'key'])
+    await global.expectToThrowBadArg(state.delete.bind(state, 123), ['string', 'key'], { key: 123 })
   })
   test('calls _delete (part of interface)', async () => {
     const state = new StateStore(true)
