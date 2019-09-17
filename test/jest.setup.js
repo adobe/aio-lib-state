@@ -11,50 +11,32 @@ governing permissions and limitations under the License.
 */
 
 /* eslint-disable jsdoc/require-jsdoc */
-const { StateStoreError } = require('../lib/StateStoreError')
 
 process.on('unhandledRejection', error => {
   throw error
 })
 
-async function toThrowWithCodeAndMessageContains (received, code, words, checkErrorType = true) {
-  function checkErrorCode (e, code) {
-    if (!(e instanceof StateStoreError)) {
-      return { message: () => `expected error to be instanceof "StateStoreError", instead received "${e.constructor.name}" with message: "${e.message}"`, pass: false }
-    }
-    if (e.code !== code) {
-      return { message: () => `expected error code to be "${code}", instead received "${e.code}" with message: "${e.message}"`, pass: false }
-    }
-  }
-  function checkErrorMessageContains (message, words) {
-    message = message.toLowerCase()
-    if (typeof words === 'string') words = [words]
-    for (let i = 0; i < words.length; ++i) {
-      let a = words[i].toLowerCase()
-      if (message.indexOf(a) < 0) {
-        return { message: () => `expected error message "${message}" to contain "${a}"`, pass: false }
-      }
-    }
-  }
+global.expectToThrowCustomError = async (func, code, words, expectedErrorDetails) => {
+  let err
   try {
-    await received()
+    await func()
   } catch (e) {
-    if (checkErrorType) {
-      const res = checkErrorCode(e, code)
-      if (res) return res
-    }
-    const res = checkErrorMessageContains(e.message, words)
-    if (res) return res
-    return { pass: true }
+    expect({ name: e.name, code: e.code, sdkDetails: e.sdkDetails, message: e.message }).toEqual(expect.objectContaining({
+      name: 'StateLibError',
+      code: code,
+      sdkDetails: expectedErrorDetails
+    }))
+
+    words.concat([code, 'StateLib'])
+    words.forEach(w => expect(e.message).toEqual(expect.stringContaining(w)))
+    err = e
   }
-  return { message: () => 'function should have thrown', pass: false }
+  expect(err).toBeInstanceOf(Error)
 }
-expect.extend({
-  toThrowWithCodeAndMessageContains,
-  toThrowBadArgWithMessageContaining: (received, words, checkErrorType = true) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.BadArgument, words, checkErrorType),
-  toThrowForbidden: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Forbidden, ['forbidden', 'credentials']),
-  toThrowInternalWithStatus: (received, status) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['' + status]),
-  toThrowInternal: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.Internal, ['unknown']),
-  toThrowNotImplemented: (received, methodName) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.NotImplemented, ['not implemented', methodName]),
-  toThrowTooLarge: (received) => toThrowWithCodeAndMessageContains(received, StateStoreError.codes.PayloadTooLarge, ['payload is too large'])
-})
+
+global.expectToThrowBadArg = async (received, words, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_BAD_ARGUMENT', words, expectedErrorDetails)
+global.expectToThrowForbidden = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_BAD_CREDENTIALS', ['cannot', 'access', 'credentials'], expectedErrorDetails)
+global.expectToThrowInternalWithStatus = async (received, status, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_INTERNAL', ['' + status], expectedErrorDetails)
+global.expectToThrowInternal = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_INTERNAL', ['unknown'], expectedErrorDetails)
+global.expectToThrowNotImplemented = async (received, methodName) => global.expectToThrowCustomError(received, 'ERROR_NOT_IMPLEMENTED', ['not', 'implemented', methodName], {})
+global.expectToThrowTooLarge = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_PAYLOAD_TOO_LARGE', ['payload', 'is', 'too', 'large'], expectedErrorDetails)

@@ -12,6 +12,7 @@ governing permissions and limitations under the License.
 
 const { CosmosStateStore } = require('../../lib/impl/CosmosStateStore')
 const { StateStore } = require('../../lib/StateStore')
+const cloneDeep = require('lodash.clonedeep')
 
 const cosmos = require('@azure/cosmos')
 jest.mock('@azure/cosmos')
@@ -57,62 +58,80 @@ beforeEach(async () => {
 })
 
 // eslint-disable-next-line jsdoc/require-jsdoc
-async function testProviderErrorHandling (func, mock) {
+async function testProviderErrorHandling (func, mock, fparams) {
   // eslint-disable-next-line jsdoc/require-jsdoc
-  async function testOne (status, expectCheck, expectArgs) {
-    mock.mockReset()
-    mock.mockRejectedValue({
+  async function testOne (status, expectCheck, isInternal, ...addArgs) {
+    const providerError = {
       code: status,
       message: 'fakeError'
-    })
-    await expect(func)[expectCheck](expectArgs)
+    }
+    const expectedErrorDetails = { ...fparams }
+    if (isInternal) expectedErrorDetails._internal = providerError
+    mock.mockReset()
+    mock.mockRejectedValue(providerError)
+
+    await global[expectCheck](func, ...addArgs, expectedErrorDetails)
   }
 
-  await testOne(403, 'toThrowForbidden')
-  await testOne(413, 'toThrowTooLarge')
-  await testOne(500, 'toThrowInternalWithStatus', 500)
-  await testOne(undefined, 'toThrowInternal')
+  await testOne(403, 'expectToThrowForbidden')
+  await testOne(413, 'expectToThrowTooLarge')
+  await testOne(500, 'expectToThrowInternalWithStatus', true, 500)
+  await testOne(undefined, 'expectToThrowInternal', true)
   // when provider resolves with bad status which is not 404
-  mock.mockReset()
-  mock.mockResolvedValue({
+  const providerResponse = {
     statusCode: 400
-  })
-  await expect(func).toThrowInternalWithStatus(400)
+  }
+  mock.mockReset()
+  mock.mockResolvedValue(providerResponse)
+  await global.expectToThrowInternalWithStatus(func, 400, { ...fparams, _internal: providerResponse })
 }
 
 describe('init', () => {
   // eslint-disable-next-line jsdoc/require-jsdoc
-  async function testInitWithMissing (object, missing) {
-    const args = { ...object, [missing]: undefined }
-    await expect(CosmosStateStore.init.bind(CosmosStateStore, args)).toThrowBadArgWithMessageContaining([missing, 'required'])
+  async function testInitBadArg (object, missing, expectedWords) {
+    if (typeof missing === 'string') missing = [missing]
+    if (typeof expectedWords === 'string') expectedWords = [expectedWords]
+
+    if (!expectedWords) expectedWords = missing
+
+    const args = cloneDeep(object)
+
+    let expectedErrorDetails = {}
+    if (args) {
+      missing.forEach(m => delete args[m])
+      expectedErrorDetails = cloneDeep(args)
+      delete expectedErrorDetails['masterKey']
+      delete expectedErrorDetails['resourceToken']
+    }
+
+    await global.expectToThrowBadArg(CosmosStateStore.init.bind(CosmosStateStore, args), expectedWords, expectedErrorDetails)
   }
   describe('with bad args', () => {
     test('with undefined credentials', async () => {
-      await expect(CosmosStateStore.init.bind(CosmosStateStore)).toThrowBadArgWithMessageContaining(['cosmos', 'required'])
+      await testInitBadArg(undefined, [], ['cosmos'])
     })
     test('with resourceToken and missing endpoint, databaseId, containerId, partitionKey', async () => {
-      await testInitWithMissing(fakeCosmosResourceCredentials, 'endpoint')
-      await testInitWithMissing(fakeCosmosResourceCredentials, 'databaseId')
-      await testInitWithMissing(fakeCosmosResourceCredentials, 'containerId')
-      await testInitWithMissing(fakeCosmosResourceCredentials, 'partitionKey')
+      const array = ['endpoint', 'databaseId', 'containerId', 'partitionKey']
+      for (let i = 0; i < array.length; i++) {
+        await testInitBadArg(fakeCosmosResourceCredentials, array[i], 'required')
+      }
     })
     test('with masterKey and missing endpoint, databaseId, containerId, partitionKey', async () => {
-      await testInitWithMissing(fakeCosmosMasterCredentials, 'endpoint')
-      await testInitWithMissing(fakeCosmosMasterCredentials, 'databaseId')
-      await testInitWithMissing(fakeCosmosMasterCredentials, 'containerId')
-      await testInitWithMissing(fakeCosmosMasterCredentials, 'partitionKey')
+      const array = ['endpoint', 'databaseId', 'containerId', 'partitionKey']
+      for (let i = 0; i < array.length; i++) {
+        await testInitBadArg(fakeCosmosMasterCredentials, array[i], 'required')
+      }
     })
     test('with missing masterKey and resourceToken', async () => {
-      const args = { ...fakeCosmosMasterCredentials, masterKey: undefined }
-      await expect(CosmosStateStore.init.bind(CosmosStateStore, args)).toThrowBadArgWithMessageContaining(['masterKey', 'resourceToken'])
+      await testInitBadArg(fakeCosmosMasterCredentials, ['resourceToken', 'masterKey'])
     })
     test('with both masterKey and resourceToken', async () => {
-      const args = { ...fakeCosmosMasterCredentials, masterKey: undefined }
-      await expect(CosmosStateStore.init.bind(CosmosStateStore, args)).toThrowBadArgWithMessageContaining(['masterKey', 'resourceToken'])
+      const args = { ...fakeCosmosResourceCredentials, masterKey: 'fakeKey' }
+      await testInitBadArg(args, [], ['resourceToken', 'masterKey'])
     })
     test('with unknown option', async () => {
       const args = { ...fakeCosmosMasterCredentials, someFake__unknown: 'hello' }
-      await expect(CosmosStateStore.init.bind(CosmosStateStore, args)).toThrowBadArgWithMessageContaining(['someFake__unknown', 'not allowed'])
+      await testInitBadArg(args, [], ['someFake__unknown', 'not', 'allowed'])
     })
     describe('with correct args', () => {
       const testInitOK = async (credentials) => {
@@ -186,7 +205,7 @@ describe('_get', () => {
   })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    await testProviderErrorHandling(state._get.bind(state, 'key'), cosmosItemReadMock)
+    await testProviderErrorHandling(state._get.bind(state, 'key'), cosmosItemReadMock, { key: 'key' })
   })
 })
 
@@ -212,7 +231,7 @@ describe('_delete', () => {
   })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    await testProviderErrorHandling(state._delete.bind(state, 'key'), cosmosItemDeleteMock)
+    await testProviderErrorHandling(state._delete.bind(state, 'key'), cosmosItemDeleteMock, { key: 'key' })
   })
 })
 
@@ -256,6 +275,6 @@ describe('_put', () => {
   })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    await testProviderErrorHandling(state._put.bind(state, 'key', 'value', {}), cosmosUpsertMock)
+    await testProviderErrorHandling(state._put.bind(state, 'key', 'value', {}), cosmosUpsertMock, { key: 'key', value: 'value', options: {} })
   })
 })

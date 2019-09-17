@@ -11,9 +11,6 @@
 <dt><a href="#StateStore">StateStore</a></dt>
 <dd><p>Cloud State Management</p>
 </dd>
-<dt><a href="#StateStoreError">StateStoreError</a> ⇐ <code>Error</code></dt>
-<dd><p>Errors raised by state store lib</p>
-</dd>
 </dl>
 
 ## Functions
@@ -26,6 +23,15 @@
 <code>config.ow</code> or your own
 <a href="#module_types..AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>config.cosmos</code>.</p>
 <p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_AUTH</code>.</p>
+</dd>
+</dl>
+
+## Typedefs
+
+<dl>
+<dt><a href="#StateLibErrors">StateLibErrors</a> : <code>object</code></dt>
+<dd><p>State lib custom errors.</p>
+<p><code>e.sdkDetails</code> provides additional context for each error (e.g. function parameter)</p>
 </dd>
 </dl>
 
@@ -147,51 +153,6 @@ Deletes a state key-value pair
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 
-<a name="StateStoreError"></a>
-
-## StateStoreError ⇐ <code>Error</code>
-Errors raised by state store lib
-
-**Kind**: global class  
-**Extends**: <code>Error</code>  
-
-* [StateStoreError](#StateStoreError) ⇐ <code>Error</code>
-    * [.StateStoreError](#StateStoreError.StateStoreError)
-        * [new StateStoreError(message, code, [internal])](#new_StateStoreError.StateStoreError_new)
-    * [.codes](#StateStoreError.codes) : <code>enum</code>
-
-<a name="StateStoreError.StateStoreError"></a>
-
-### StateStoreError.StateStoreError
-**Kind**: static class of [<code>StateStoreError</code>](#StateStoreError)  
-<a name="new_StateStoreError.StateStoreError_new"></a>
-
-#### new StateStoreError(message, code, [internal])
-Creates an instance of StateStoreError.
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| message | <code>string</code> | error message |
-| code | [<code>codes</code>](#StateStoreError.codes) | Storage Error code |
-| [internal] | <code>object</code> | debug error object for internal/underlying wrapped errors |
-
-<a name="StateStoreError.codes"></a>
-
-### StateStoreError.codes : <code>enum</code>
-StateStoreError codes
-
-**Kind**: static enum of [<code>StateStoreError</code>](#StateStoreError)  
-**Properties**
-
-| Name | Type | Default |
-| --- | --- | --- |
-| Internal | <code>string</code> | <code>&quot;Internal&quot;</code> | 
-| NotImplemented | <code>string</code> | <code>&quot;NotImplemented&quot;</code> | 
-| BadArgument | <code>string</code> | <code>&quot;BadArgument&quot;</code> | 
-| Forbidden | <code>string</code> | <code>&quot;Forbidden&quot;</code> | 
-| PayloadTooLarge | <code>string</code> | <code>&quot;PayloadTooLarge&quot;</code> | 
-
 <a name="init"></a>
 
 ## init([config]) ⇒ [<code>Promise.&lt;StateStore&gt;</code>](#StateStore)
@@ -208,7 +169,7 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 **Returns**: [<code>Promise.&lt;StateStore&gt;</code>](#StateStore) - A StateStore instance  
 **Throws**:
 
-- [<code>StateStoreError</code>](#StateStoreError) 
+- <code>codes.BAD\_CREDENTIALS</code><code>codes.BAD\_ARGUMENT</code> 
 
 
 | Param | Type | Default | Description |
@@ -219,4 +180,22 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | [config.tvm] | <code>object</code> |  | tvm configuration, applies only when passing OpenWhisk credentials |
 | [config.tvm.apiUrl] | <code>string</code> |  | alternative tvm api url. |
 | [config.tvm.cacheFile] | <code>string</code> |  | alternative tvm cache file, set to `false` to disable caching of temporary credentials. |
+
+<a name="StateLibErrors"></a>
+
+## StateLibErrors : <code>object</code>
+State lib custom errors.
+
+`e.sdkDetails` provides additional context for each error (e.g. function parameter)
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ERROR_BAD_ARGUMENT | <code>StateLibError</code> | this error is thrown when an argument is missing or has invalid type |
+| ERROR_NOT_IMPLEMENTED | <code>StateLibError</code> | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
+| ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
+| ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |
+| ERROR_INTERNAL | <code>StateLibError</code> | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
 
