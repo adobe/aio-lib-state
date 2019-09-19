@@ -44,8 +44,8 @@
     "jsdoc-to-markdown": "^5.0.0"
   },
   "dependencies": {
-    "@adobe/aio-lib-core-errors": "^1.0.1",
-    "@adobe/aio-lib-tvm": "^0.6.0",
+    "@adobe/aio-lib-core-errors": "^2.0.0",
+    "@adobe/aio-lib-core-tvm": "^0.7.0",
     "@azure/cosmos": "^3.2.0",
     "@hapi/joi": "^15.1.0",
     "lodash.clonedeep": "^4.5.0"
