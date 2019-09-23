@@ -44,7 +44,8 @@ npm install @adobe/aio-lib-state
   const state = await stateLib.init({ cosmos: { endpoint, masterKey, databaseId, containerId, partitionKey } })
 
   // get
-  const value = await state.get('key')
+  const res = await state.get('key') // res = { value, expiration }
+  const value = res.value
 
   // put
   await state.put('key', 'value')

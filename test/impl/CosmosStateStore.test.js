@@ -172,36 +172,55 @@ describe('_get', () => {
     })
   })
 
-  test('with existing key value', async () => {
+  test('with existing key value and no ttl', async () => {
     cosmosItemReadMock.mockResolvedValue({
       resource: {
-        value: 'fakeValue'
+        value: 'fakeValue',
+        _ts: 123456789,
+        ttl: -1
       }
     })
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    const value = await state._get('fakeKey')
-    expect(value).toEqual('fakeValue')
+    const res = await state._get('fakeKey')
+    expect(res.value).toEqual('fakeValue')
+    expect(res.expiration).toEqual(null)
     expect(cosmosItemReadMock).toHaveBeenCalledTimes(1)
     expect(cosmosItemMock).toHaveBeenCalledWith('fakeKey', state._cosmos.partitionKey)
   })
   test('with existing key and value=undefined', async () => {
     cosmosItemReadMock.mockResolvedValue({
       resource: {
-        value: undefined
+        value: undefined,
+        _ts: 123456789,
+        ttl: -1
       }
     })
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    const value = await state._get('fakeKey')
-    expect(value).toEqual(undefined)
+    const res = await state._get('fakeKey')
+    expect(res.value).toEqual(undefined)
+    expect(res.expiration).toEqual(null)
   })
   test('with non existing key value', async () => {
     cosmosItemReadMock.mockResolvedValue({
-      resource: {},
+      resource: undefined,
       statusCode: 404
     })
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
-    const value = await state._get('fakeKey')
-    expect(value).toEqual(undefined)
+    const res = await state._get('fakeKey')
+    expect(res).toEqual(undefined)
+  })
+  test('with key value that has a non negative ttl', async () => {
+    cosmosItemReadMock.mockResolvedValue({
+      resource: {
+        value: { a: { fake: 'value' } },
+        _ts: 123456789,
+        ttl: 10
+      }
+    })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const res = await state._get('fakeKey')
+    expect(res.value).toEqual({ a: { fake: 'value' } })
+    expect(res.expiration).toEqual(new Date(123456789 + 10).toISOString())
   })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
