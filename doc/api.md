@@ -35,6 +35,7 @@
     * [~AzureCosmosPartitionResourceCredentials](#module_types..AzureCosmosPartitionResourceCredentials) : <code>object</code>
     * [~AzureCosmosMasterCredentials](#module_types..AzureCosmosMasterCredentials) : <code>object</code>
     * [~StateStorePutOptions](#module_types..StateStorePutOptions) : <code>object</code>
+    * [~StateStoreGetReturnValue](#module_types..StateStoreGetReturnValue) : <code>Promise.&lt;object&gt;</code>
     * [~StateLibErrors](#module_types..StateLibErrors) : <code>object</code>
 
 <a name="module_types..OpenWhiskCredentials"></a>
@@ -94,6 +95,19 @@ StateStore put options
 | --- | --- | --- |
 | ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A value of 0 sets default. |
 
+<a name="module_types..StateStoreGetReturnValue"></a>
+
+### types~StateStoreGetReturnValue : <code>Promise.&lt;object&gt;</code>
+StateStore get return object
+
+**Kind**: inner typedef of [<code>types</code>](#module_types)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| expiration | <code>string</code> \| <code>null</code> | ISO date string of expiration time for the key-value pair, if the ttl is infinite expiration=null |
+| value | <code>any</code> | the value set by put |
+
 <a name="module_types..StateLibErrors"></a>
 
 ### types~StateLibErrors : <code>object</code>
@@ -120,18 +134,18 @@ Cloud State Management
 **Kind**: global abstract class  
 
 * *[StateStore](#StateStore)*
-    * *[.get(key)](#StateStore+get) ⇒ <code>Promise.&lt;any&gt;</code>*
+    * *[.get(key)](#StateStore+get) ⇒ [<code>StateStoreGetReturnValue</code>](#module_types..StateStoreGetReturnValue)*
     * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
 <a name="StateStore+get"></a>
 
-### *stateStore.get(key) ⇒ <code>Promise.&lt;any&gt;</code>*
+### *stateStore.get(key) ⇒ [<code>StateStoreGetReturnValue</code>](#module_types..StateStoreGetReturnValue)*
 Retrieves the state value for given key.
 If the key doesn't exist returns undefined.
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
-**Returns**: <code>Promise.&lt;any&gt;</code> - value stored under key or undefined  
+**Returns**: [<code>StateStoreGetReturnValue</code>](#module_types..StateStoreGetReturnValue) - get response holding value and additional info  
 
 | Param | Type | Description |
 | --- | --- | --- |
