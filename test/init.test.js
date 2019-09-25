@@ -79,12 +79,12 @@ describe('init', () => {
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeTVMResponse)
     })
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
-      cosmosTVMMock.mockRejectedValue({ status: 401 })
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { namespace: fakeOWCreds.namespace })
+      cosmosTVMMock.mockRejectedValue({ status: 401, sdkDetails: { fake: 'details' } })
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { fake: 'details' })
     })
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
-      cosmosTVMMock.mockRejectedValue({ status: 403 })
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { namespace: fakeOWCreds.namespace })
+      cosmosTVMMock.mockRejectedValue({ status: 403, sdkDetails: { fake: 'details' } })
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { fake: 'details' })
     })
     test('when tvm rejects with another status code (throws tvm error)', async () => {
       const tvmError = new Error({ status: 500 })
