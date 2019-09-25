@@ -248,6 +248,14 @@ describe('_delete', () => {
     expect(cosmosItemDeleteMock).toHaveBeenCalledTimes(1)
     expect(cosmosItemMock).toHaveBeenCalledWith('fakeKey', state._cosmos.partitionKey)
   })
+  test('when cosmos return with a 404 (should return null)', async () => {
+    cosmosItemDeleteMock.mockRejectedValue({ code: 404 })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const ret = await state._delete('fakeKey')
+    expect(ret).toEqual(null)
+    expect(cosmosItemDeleteMock).toHaveBeenCalledTimes(1)
+    expect(cosmosItemMock).toHaveBeenCalledWith('fakeKey', state._cosmos.partitionKey)
+  })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
     await testProviderErrorHandling(state._delete.bind(state, 'key'), cosmosItemDeleteMock, { key: 'key' })
