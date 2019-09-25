@@ -171,7 +171,7 @@ Creates or updates a state key-value pair
 Deletes a state key-value pair
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
-**Returns**: <code>Promise.&lt;string&gt;</code> - key  
+**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exists  
 
 | Param | Type | Description |
 | --- | --- | --- |
