@@ -59,6 +59,10 @@ npm install @adobe/aio-lib-state
 
 `goto` [API](doc/api.md)
 
+## Debug
+
+set `DEBUG=@adobe/aio-lib-state` to see debug logs.
+
 ## Adobe I/O State Store Limitations (per user)
 
 Apply when init with OW credentials (and not own cloud DB credentials):
