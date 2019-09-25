@@ -13,11 +13,6 @@ governing permissions and limitations under the License.
 // @ts-nocheck
 const { StateStore } = require('../lib/StateStore')
 
-beforeEach(() => {
-  expect.hasAssertions()
-  jest.restoreAllMocks()
-})
-
 describe('init', () => {
   test('missing implementation', async () => {
     await global.expectToThrowNotImplemented(StateStore.init.bind(StateStore), 'init')
@@ -45,6 +40,7 @@ describe('get', () => {
     await state.get('key')
     expect(state._get).toHaveBeenCalledTimes(1)
     expect(state._get).toHaveBeenCalledWith('key')
+    expect(global.mockLogDebug).toHaveBeenCalledWith(`get 'key'`)
   })
 })
 
@@ -75,6 +71,7 @@ describe('put', () => {
     await state.put('key', 'value', { ttl: 0 })
     expect(state._put).toHaveBeenCalledTimes(1)
     expect(state._put).toHaveBeenCalledWith('key', 'value', { ttl: StateStore.DefaultTTL })
+    expect(global.mockLogDebug).toHaveBeenCalledWith(`put 'key' with ttl ${StateStore.DefaultTTL}`)
   })
   test('calls _put with custom ttl when options.ttl is set', async () => {
     const state = new StateStore(true)
@@ -82,6 +79,7 @@ describe('put', () => {
     await state.put('key', 'value', { ttl: 99 })
     expect(state._put).toHaveBeenCalledTimes(1)
     expect(state._put).toHaveBeenCalledWith('key', 'value', { ttl: 99 })
+    expect(global.mockLogDebug).toHaveBeenCalledWith(`put 'key' with ttl 99`)
   })
 })
 
@@ -100,5 +98,6 @@ describe('delete', () => {
     await state.delete('key', 'value')
     expect(state._delete).toHaveBeenCalledTimes(1)
     expect(state._delete).toHaveBeenCalledWith('key')
+    expect(global.mockLogDebug).toHaveBeenCalledWith(`delete 'key'`)
   })
 })

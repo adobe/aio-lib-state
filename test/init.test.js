@@ -9,7 +9,6 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-
 const stateLib = require('../index')
 
 const { CosmosStateStore } = require('../lib/impl/CosmosStateStore')
@@ -17,11 +16,6 @@ jest.mock('../lib/impl/CosmosStateStore.js')
 
 const TvmClient = require('@adobe/aio-lib-core-tvm')
 jest.mock('@adobe/aio-lib-core-tvm')
-
-beforeEach(async () => {
-  expect.hasAssertions()
-  jest.restoreAllMocks()
-})
 
 describe('init', () => {
   /* Common setup for init tests */
@@ -39,6 +33,7 @@ describe('init', () => {
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeCosmosConfig)
       expect(TvmClient.init).toHaveBeenCalledTimes(0)
+      expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('cosmos'))
     })
   })
 
@@ -69,6 +64,7 @@ describe('init', () => {
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: fakeOWCreds, ...fakeTVMOptions })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeTVMResponse)
+      expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('openwhisk'))
     })
     test('when empty config to be able to pass OW creds as env variables', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
@@ -77,6 +73,7 @@ describe('init', () => {
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: undefined })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeTVMResponse)
+      expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('openwhisk'))
     })
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
       cosmosTVMMock.mockRejectedValue({ status: 401, sdkDetails: { fake: 'details' } })

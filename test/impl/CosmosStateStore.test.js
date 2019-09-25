@@ -41,9 +41,6 @@ const fakeCosmosTVMResponse = {
 const cosmosDatabaseMock = jest.fn()
 const cosmosContainerMock = jest.fn()
 beforeEach(async () => {
-  expect.hasAssertions()
-  jest.restoreAllMocks()
-
   cosmos.CosmosClient.mockReset()
   cosmosContainerMock.mockReset()
   cosmosDatabaseMock.mockReset()
