@@ -61,7 +61,7 @@ npm install @adobe/aio-lib-state
 
 ## Debug
 
-set `DEBUG=@adobe/aio-lib-state` to see debug logs.
+set `DEBUG=@adobe/aio-lib-state*` to see debug logs.
 
 ## Adobe I/O State Store Limitations (per user)
 
