@@ -40,7 +40,7 @@ describe('get', () => {
     await state.get('key')
     expect(state._get).toHaveBeenCalledTimes(1)
     expect(state._get).toHaveBeenCalledWith('key')
-    expect(global.mockLogDebug).toHaveBeenCalledWith(`get 'key'`)
+    expect(global.mockLogDebug).toHaveBeenCalledWith('get \'key\'')
   })
 })
 
@@ -79,7 +79,7 @@ describe('put', () => {
     await state.put('key', 'value', { ttl: 99 })
     expect(state._put).toHaveBeenCalledTimes(1)
     expect(state._put).toHaveBeenCalledWith('key', 'value', { ttl: 99 })
-    expect(global.mockLogDebug).toHaveBeenCalledWith(`put 'key' with ttl 99`)
+    expect(global.mockLogDebug).toHaveBeenCalledWith('put \'key\' with ttl 99')
   })
 })
 
@@ -98,6 +98,6 @@ describe('delete', () => {
     await state.delete('key', 'value')
     expect(state._delete).toHaveBeenCalledTimes(1)
     expect(state._delete).toHaveBeenCalledWith('key')
-    expect(global.mockLogDebug).toHaveBeenCalledWith(`delete 'key'`)
+    expect(global.mockLogDebug).toHaveBeenCalledWith('delete \'key\'')
   })
 })

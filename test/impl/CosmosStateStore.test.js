@@ -97,8 +97,8 @@ describe('init', () => {
     if (args) {
       missing.forEach(m => delete args[m])
       expectedErrorDetails = cloneDeep(args)
-      if (expectedErrorDetails['masterKey']) expectedErrorDetails['masterKey'] = '<hidden>'
-      if (expectedErrorDetails['resourceToken']) expectedErrorDetails['resourceToken'] = '<hidden>'
+      if (expectedErrorDetails.masterKey) expectedErrorDetails.masterKey = '<hidden>'
+      if (expectedErrorDetails.resourceToken) expectedErrorDetails.resourceToken = '<hidden>'
     }
 
     await global.expectToThrowBadArg(CosmosStateStore.init.bind(CosmosStateStore, args), expectedWords, expectedErrorDetails)
