@@ -41,9 +41,6 @@ const fakeCosmosTVMResponse = {
 const cosmosDatabaseMock = jest.fn()
 const cosmosContainerMock = jest.fn()
 beforeEach(async () => {
-  expect.hasAssertions()
-  jest.restoreAllMocks()
-
   cosmos.CosmosClient.mockReset()
   cosmosContainerMock.mockReset()
   cosmosDatabaseMock.mockReset()
@@ -100,8 +97,8 @@ describe('init', () => {
     if (args) {
       missing.forEach(m => delete args[m])
       expectedErrorDetails = cloneDeep(args)
-      delete expectedErrorDetails['masterKey']
-      delete expectedErrorDetails['resourceToken']
+      if (expectedErrorDetails['masterKey']) expectedErrorDetails['masterKey'] = '<hidden>'
+      if (expectedErrorDetails['resourceToken']) expectedErrorDetails['resourceToken'] = '<hidden>'
     }
 
     await global.expectToThrowBadArg(CosmosStateStore.init.bind(CosmosStateStore, args), expectedWords, expectedErrorDetails)
