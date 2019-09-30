@@ -24,9 +24,13 @@ describe('init', () => {
     CosmosStateStore.init = jest.fn()
   })
 
+  const checkInitDebugLogNoSecrets = (str) => expect(global.mockLogDebug).not.toHaveBeenCalledWith(expect.stringContaining(str))
+
   describe('when user db credentials', () => {
     const fakeCosmosConfig = {
-      fake: 'cosmosconfig'
+
+      masterKey: 'fakeKey',
+      resourceToken: 'fakeToken'
     }
     test('with cosmos config', async () => {
       await stateLib.init({ cosmos: fakeCosmosConfig })
@@ -34,6 +38,8 @@ describe('init', () => {
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeCosmosConfig)
       expect(TvmClient.init).toHaveBeenCalledTimes(0)
       expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('cosmos'))
+      checkInitDebugLogNoSecrets(fakeCosmosConfig.masterKey)
+      checkInitDebugLogNoSecrets(fakeCosmosConfig.resourceToken)
     })
   })
 
@@ -42,8 +48,8 @@ describe('init', () => {
       fakeTVMResponse: 'response'
     }
     const fakeOWCreds = {
-      auth: 'fake',
-      namespace: 'fake'
+      auth: 'fakeAuth',
+      namespace: 'fakeNS'
     }
     const fakeTVMOptions = {
       some: 'options'
@@ -65,6 +71,7 @@ describe('init', () => {
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeTVMResponse)
       expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('openwhisk'))
+      checkInitDebugLogNoSecrets(fakeOWCreds.auth)
     })
     test('when empty config to be able to pass OW creds as env variables', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
