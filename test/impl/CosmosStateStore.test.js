@@ -103,6 +103,8 @@ describe('init', () => {
 
     await global.expectToThrowBadArg(CosmosStateStore.init.bind(CosmosStateStore, args), expectedWords, expectedErrorDetails)
   }
+  const checkInitDebugLogNoSecrets = (str) => expect(global.mockLogDebug).not.toHaveBeenCalledWith(expect.stringContaining(str))
+
   describe('with bad args', () => {
     test('with undefined credentials', async () => {
       await testInitBadArg(undefined, [], ['cosmos'])
@@ -145,12 +147,15 @@ describe('init', () => {
 
       test('with resourceToken', async () => {
         await testInitOK(fakeCosmosResourceCredentials)
+        checkInitDebugLogNoSecrets(fakeCosmosResourceCredentials.resourceToken)
       })
       test('with resourceToken and expiration (tvm response format)', async () => {
         await testInitOK(fakeCosmosTVMResponse)
+        checkInitDebugLogNoSecrets(fakeCosmosTVMResponse.resourceToken)
       })
       test('with masterKey', async () => {
         await testInitOK(fakeCosmosMasterCredentials)
+        checkInitDebugLogNoSecrets(fakeCosmosMasterCredentials.masterKey)
       })
     })
   })
