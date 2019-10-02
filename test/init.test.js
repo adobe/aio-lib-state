@@ -83,15 +83,20 @@ describe('init', () => {
       expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('openwhisk'))
     })
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
-      cosmosTVMMock.mockRejectedValue({ status: 401, sdkDetails: { fake: 'details' } })
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { fake: 'details' })
+      const e = new Error('tvm error')
+      e.sdkDetails = { fake: 'details', status: 401 }
+      cosmosTVMMock.mockRejectedValue(e)
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
     })
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
-      cosmosTVMMock.mockRejectedValue({ status: 403, sdkDetails: { fake: 'details' } })
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), { fake: 'details' })
+      const e = new Error('tvm error')
+      e.sdkDetails = { fake: 'details', status: 403 }
+      cosmosTVMMock.mockRejectedValue(e)
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
     })
     test('when tvm rejects with another status code (throws tvm error)', async () => {
-      const tvmError = new Error({ status: 500 })
+      const tvmError = new Error('tvm error')
+      tvmError.sdkDetails = { fake: 'details', status: 500 }
       cosmosTVMMock.mockRejectedValue(tvmError)
       try {
         await stateLib.init({ ow: fakeOWCreds })
