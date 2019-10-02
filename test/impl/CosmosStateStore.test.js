@@ -58,15 +58,13 @@ beforeEach(async () => {
 async function testProviderErrorHandling (func, mock, fparams) {
   // eslint-disable-next-line jsdoc/require-jsdoc
   async function testOne (status, expectCheck, isInternal, ...addArgs) {
-    const providerError = {
-      code: status,
-      message: 'fakeError'
-    }
+    const providerError = new Error('fakeProviderError')
+    if (status) providerError.code = status
+
     const expectedErrorDetails = { ...fparams }
     if (isInternal) expectedErrorDetails._internal = providerError
     mock.mockReset()
     mock.mockRejectedValue(providerError)
-
     await global[expectCheck](func, ...addArgs, expectedErrorDetails)
   }
 
