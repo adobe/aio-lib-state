@@ -220,7 +220,7 @@ describe('_get', () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
     const res = await state._get('fakeKey')
     expect(res.value).toEqual({ a: { fake: 'value' } })
-    expect(res.expiration).toEqual(new Date(123456789 + 10).toISOString())
+    expect(res.expiration).toEqual(new Date(123456789 * 1000 + 10 * 1000).toISOString())
   })
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
