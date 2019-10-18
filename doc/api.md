@@ -34,7 +34,7 @@
 <dt><a href="#StateStorePutOptions">StateStorePutOptions</a> : <code>object</code></dt>
 <dd><p>StateStore put options</p>
 </dd>
-<dt><a href="#StateStoreGetReturnValue">StateStoreGetReturnValue</a> : <code>Promise.&lt;object&gt;</code></dt>
+<dt><a href="#StateStoreGetReturnValue">StateStoreGetReturnValue</a> : <code>object</code></dt>
 <dd><p>StateStore get return object</p>
 </dd>
 <dt><a href="#StateLibErrors">StateLibErrors</a> : <code>object</code></dt>
@@ -51,18 +51,18 @@ Cloud State Management
 **Kind**: global abstract class  
 
 * *[StateStore](#StateStore)*
-    * *[.get(key)](#StateStore+get) ⇒ [<code>StateStoreGetReturnValue</code>](#StateStoreGetReturnValue)*
+    * *[.get(key)](#StateStore+get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
     * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
 <a name="StateStore+get"></a>
 
-### *stateStore.get(key) ⇒ [<code>StateStoreGetReturnValue</code>](#StateStoreGetReturnValue)*
+### *stateStore.get(key) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
 Retrieves the state value for given key.
 If the key doesn't exist returns undefined.
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
-**Returns**: [<code>StateStoreGetReturnValue</code>](#StateStoreGetReturnValue) - get response holding value and additional info  
+**Returns**: [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue) - get response holding value and additional info  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ StateStore put options
 
 <a name="StateStoreGetReturnValue"></a>
 
-## StateStoreGetReturnValue : <code>Promise.&lt;object&gt;</code>
+## StateStoreGetReturnValue : <code>object</code>
 StateStore get return object
 
 **Kind**: global typedef  
