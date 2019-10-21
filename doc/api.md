@@ -22,7 +22,7 @@
 <a href="#module_types..OpenWhiskCredentials">OpenWhisk credentials</a> in
 <code>config.ow</code> or your own
 <a href="#module_types..AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>config.cosmos</code>.</p>
-<p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_AUTH</code>.</p>
+<p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_API_KEY</code>.</p>
 </dd>
 </dl>
 
@@ -187,7 +187,7 @@ To use the SDK you must either provide your
 `config.ow` or your own
 [Azure Cosmos credentials](#module_types..AzureCosmosMasterCredentials) in `config.cosmos`.
 
-OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_AUTH`.
+OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_API_KEY`.
 
 **Kind**: global function  
 **Returns**: [<code>Promise.&lt;StateStore&gt;</code>](#StateStore) - A StateStore instance  
@@ -195,7 +195,7 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [config] | <code>object</code> | <code>{}</code> | used to init the sdk |
-| [config.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_AUTH` |
+| [config.ow] | [<code>OpenWhiskCredentials</code>](#module_types..OpenWhiskCredentials) |  | [OpenWhiskCredentials](#module_types..OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
 | [config.cosmos] | [<code>AzureCosmosMasterCredentials</code>](#module_types..AzureCosmosMasterCredentials) \| [<code>AzureCosmosPartitionResourceCredentials</code>](#module_types..AzureCosmosPartitionResourceCredentials) |  | [Azure Cosmos resource credentials](#module_types..AzureCosmosPartitionResourceCredentials) or [Azure Cosmos account credentials](#module_types..AzureCosmosMasterCredentials) |
 | [config.tvm] | <code>object</code> |  | tvm configuration, applies only when passing OpenWhisk credentials |
 | [config.tvm.apiUrl] | <code>string</code> |  | alternative tvm api url. |
