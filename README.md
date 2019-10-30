@@ -38,7 +38,7 @@ npm install @adobe/aio-lib-state
   // init
   // init sdk using OpenWhisk credentials
   const state = await stateLib.init({ ow: { namespace, auth } })
-  // init when env vars __OW_AUTH and __OW_NAMESPACE are set (e.g. when running in an OpenWhisk action)
+  // init when env vars __OW_API_KEY and __OW_NAMESPACE are set (e.g. when running in an OpenWhisk action)
   const state = await stateLib.init()
   // or if you want to use your own cloud DB account
   const state = await stateLib.init({ cosmos: { endpoint, masterKey, databaseId, containerId, partitionKey } })
