@@ -15,7 +15,7 @@
 <a href="#OpenWhiskCredentials">OpenWhisk credentials</a> in
 <code>config.ow</code> or your own
 <a href="#AzureCosmosMasterCredentials">Azure Cosmos credentials</a> in <code>config.cosmos</code>.</p>
-<p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_AUTH</code>.</p>
+<p>OpenWhisk credentials can also be read from environment variables <code>__OW_NAMESPACE</code> and <code>__OW_API_KEY</code>.</p>
 </dd>
 </dl>
 
@@ -104,7 +104,7 @@ To use the SDK you must either provide your
 `config.ow` or your own
 [Azure Cosmos credentials](#AzureCosmosMasterCredentials) in `config.cosmos`.
 
-OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_AUTH`.
+OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_API_KEY`.
 
 **Kind**: global function  
 **Returns**: [<code>Promise.&lt;StateStore&gt;</code>](#StateStore) - A StateStore instance  
@@ -112,7 +112,7 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [config] | <code>object</code> | <code>{}</code> | used to init the sdk |
-| [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) |  | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_AUTH` |
+| [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) |  | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
 | [config.cosmos] | [<code>AzureCosmosMasterCredentials</code>](#AzureCosmosMasterCredentials) \| [<code>AzureCosmosPartitionResourceCredentials</code>](#AzureCosmosPartitionResourceCredentials) |  | [Azure Cosmos resource credentials](#AzureCosmosPartitionResourceCredentials) or [Azure Cosmos account credentials](#AzureCosmosMasterCredentials) |
 | [config.tvm] | <code>object</code> |  | tvm configuration, applies only when passing OpenWhisk credentials |
 | [config.tvm.apiUrl] | <code>string</code> |  | alternative tvm api url. |
@@ -204,5 +204,4 @@ State lib custom errors.
 | ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
 | ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |
 | ERROR_INTERNAL | <code>StateLibError</code> | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
-
 
