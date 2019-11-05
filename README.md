@@ -14,7 +14,7 @@ governing permissions and limitations under the License.
 [![Downloads/week](https://img.shields.io/npm/dw/@adobe/aio-lib-state.svg)](https://npmjs.org/package/@adobe/aio-lib-state)
 [![Build Status](https://travis-ci.com/adobe/aio-lib-state.svg?branch=master)](https://travis-ci.com/adobe/aio-lib-state)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-state/master.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-state/)
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-state/master.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-state/) [![Greenkeeper badge](https://badges.greenkeeper.io/adobe/aio-lib-state.svg)](https://greenkeeper.io/)
 
 # Adobe I/O Lib State
 
