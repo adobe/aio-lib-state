@@ -14,22 +14,26 @@ governing permissions and limitations under the License.
 const { StateStore } = require('../lib/StateStore')
 
 describe('init', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
     await global.expectToThrowNotImplemented(StateStore.init.bind(StateStore), 'init')
   })
 })
 
 describe('constructor', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
     await global.expectToThrowNotImplemented(() => new StateStore(false), 'StateStore')
   })
 })
 
 describe('get', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.get.bind(state, 'key'), '_get')
   })
+  // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.get.bind(state, 123), ['string', 'key'], { key: 123 })
@@ -45,14 +49,17 @@ describe('get', () => {
 })
 
 describe('put', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.put.bind(state, 'key', 'value'), '_put')
   })
+  // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.put.bind(state, 123, 'value', {}), ['string', 'key'], { key: 123, value: 'value', options: {} })
   })
+  // eslint-disable-next-line jest/expect-expect
   test('bad options', async () => {
     const state = new StateStore(true)
     const expectedDetails = { key: 'key', value: 'value' }
@@ -84,10 +91,12 @@ describe('put', () => {
 })
 
 describe('delete', () => {
+  // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.delete.bind(state, 'key'), '_delete')
   })
+  // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.delete.bind(state, 123), ['string', 'key'], { key: 123 })

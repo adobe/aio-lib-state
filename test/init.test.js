@@ -82,12 +82,14 @@ describe('init', () => {
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeTVMResponse)
       expect(global.mockLogDebug).toHaveBeenCalledWith(expect.stringContaining('openwhisk'))
     })
+    // eslint-disable-next-line jest/expect-expect
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 401 }
       cosmosTVMMock.mockRejectedValue(e)
       await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
     })
+    // eslint-disable-next-line jest/expect-expect
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 403 }
@@ -98,11 +100,7 @@ describe('init', () => {
       const tvmError = new Error('tvm error')
       tvmError.sdkDetails = { fake: 'details', status: 500 }
       cosmosTVMMock.mockRejectedValue(tvmError)
-      try {
-        await stateLib.init({ ow: fakeOWCreds })
-      } catch (e) {
-        expect(e).toBe(tvmError)
-      }
+      return expect(stateLib.init({ ow: fakeOWCreds })).rejects.toThrow(tvmError)
     })
   })
 })
