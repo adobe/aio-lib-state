@@ -104,28 +104,34 @@ describe('init', () => {
   const checkInitDebugLogNoSecrets = (str) => expect(global.mockLogDebug).not.toHaveBeenCalledWith(expect.stringContaining(str))
 
   describe('with bad args', () => {
+    // eslint-disable-next-line jest/expect-expect
     test('with undefined credentials', async () => {
       await testInitBadArg(undefined, [], ['cosmos'])
     })
+    // eslint-disable-next-line jest/expect-expect
     test('with resourceToken and missing endpoint, databaseId, containerId, partitionKey', async () => {
       const array = ['endpoint', 'databaseId', 'containerId', 'partitionKey']
       for (let i = 0; i < array.length; i++) {
         await testInitBadArg(fakeCosmosResourceCredentials, array[i], 'required')
       }
     })
+    // eslint-disable-next-line jest/expect-expect
     test('with masterKey and missing endpoint, databaseId, containerId, partitionKey', async () => {
       const array = ['endpoint', 'databaseId', 'containerId', 'partitionKey']
       for (let i = 0; i < array.length; i++) {
         await testInitBadArg(fakeCosmosMasterCredentials, array[i], 'required')
       }
     })
+    // eslint-disable-next-line jest/expect-expect
     test('with missing masterKey and resourceToken', async () => {
       await testInitBadArg(fakeCosmosMasterCredentials, ['resourceToken', 'masterKey'])
     })
+    // eslint-disable-next-line jest/expect-expect
     test('with both masterKey and resourceToken', async () => {
       const args = { ...fakeCosmosResourceCredentials, masterKey: 'fakeKey' }
       await testInitBadArg(args, [], ['resourceToken', 'masterKey'])
     })
+    // eslint-disable-next-line jest/expect-expect
     test('with unknown option', async () => {
       const args = { ...fakeCosmosMasterCredentials, someFake__unknown: 'hello' }
       await testInitBadArg(args, [], ['someFake__unknown', 'not', 'allowed'])
@@ -143,14 +149,17 @@ describe('init', () => {
         expect(cosmosContainerMock).toHaveBeenCalledWith(credentials.containerId)
       }
 
+      // eslint-disable-next-line jest/expect-expect
       test('with resourceToken', async () => {
         await testInitOK(fakeCosmosResourceCredentials)
         checkInitDebugLogNoSecrets(fakeCosmosResourceCredentials.resourceToken)
       })
+      // eslint-disable-next-line jest/expect-expect
       test('with resourceToken and expiration (tvm response format)', async () => {
         await testInitOK(fakeCosmosTVMResponse)
         checkInitDebugLogNoSecrets(fakeCosmosTVMResponse.resourceToken)
       })
+      // eslint-disable-next-line jest/expect-expect
       test('with masterKey', async () => {
         await testInitOK(fakeCosmosMasterCredentials)
         checkInitDebugLogNoSecrets(fakeCosmosMasterCredentials.masterKey)
@@ -222,6 +231,7 @@ describe('_get', () => {
     expect(res.value).toEqual({ a: { fake: 'value' } })
     expect(res.expiration).toEqual(new Date(123456789 * 1000 + 10 * 1000).toISOString())
   })
+  // eslint-disable-next-line jest/expect-expect
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
     await testProviderErrorHandling(state._get.bind(state, 'key'), cosmosItemReadMock, { key: 'key' })
@@ -256,6 +266,7 @@ describe('_delete', () => {
     expect(cosmosItemDeleteMock).toHaveBeenCalledTimes(1)
     expect(cosmosItemMock).toHaveBeenCalledWith('fakeKey', state._cosmos.partitionKey)
   })
+  // eslint-disable-next-line jest/expect-expect
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
     await testProviderErrorHandling(state._delete.bind(state, 'key'), cosmosItemDeleteMock, { key: 'key' })
@@ -300,6 +311,7 @@ describe('_put', () => {
     expect(cosmosUpsertMock).toHaveBeenCalledTimes(1)
     expect(cosmosUpsertMock).toHaveBeenCalledWith({ id: key, partitionKey: state._cosmos.partitionKey, ttl: -1, value })
   })
+  // eslint-disable-next-line jest/expect-expect
   test('with error response from provider', async () => {
     const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
     await testProviderErrorHandling(state._put.bind(state, 'key', 'value', {}), cosmosUpsertMock, { key: 'key', value: 'value', options: {} })
