@@ -77,12 +77,11 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 ## Troubleshooting
 
 ### `"[StateLib:ERROR_INTERNAL] unknown error response from provider with status: unknown"`
-- when using `@adobe/aio-lib-state` in an action bundled with **webpack** please make sure to turn off minification and enable resolving of es6 modules as underlying azure sdk is sensible to webpack bundling. This can be done by adding the following lines to your webpack config:
-```json
+- when using `@adobe/aio-lib-state` in an action bundled with **webpack** please make sure to turn off minification and enable resolving of es6 modules. Add the following lines to your webpack config:
+```javascript
   optimization: {
     minimize: false
   },
-  // the following lines are used to require es6 module, e.g.node-fetch which is used by azure sdk
   resolve: {
     extensions: ['.js'],
     mainFields: ['main']
