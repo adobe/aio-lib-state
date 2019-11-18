@@ -74,6 +74,20 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 - Consistency: `Session Consistency (CosmosDB)`
 - Namespace max length: `49 characters`
 
+## Troubleshooting
+
+### `"[StateLib:ERROR_INTERNAL] unknown error response from provider with status: unknown"`
+- when using `@adobe/aio-lib-state` in an action bundled with **webpack** please make sure to turn off minification and enable resolving of es6 modules. Add the following lines to your webpack config:
+```javascript
+  optimization: {
+    minimize: false
+  },
+  resolve: {
+    extensions: ['.js'],
+    mainFields: ['main']
+  }
+```
+
 ## Contributing
 
 Contributions are welcomed! Read the [Contributing Guide](./.github/CONTRIBUTING.md) for more information.
