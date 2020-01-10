@@ -77,7 +77,7 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 
 **Strong consistency** is guaranteed for reads and writes within a single instance of the state sdk (returned by `stateLib.init()`).
 
-However, operations accross multiple instances are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then 
+However, operations across multiple instances are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then 
 
 ```javascript
 await a.put('key', 'value')
