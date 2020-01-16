@@ -71,8 +71,22 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 - Max state key size: `1024 bytes`
 - Max total state size: `10 GB`
 - Token expiry (need to re-init after expiry): `1 hour`
-- Consistency: `Session Consistency (CosmosDB)`
 - Namespace max length: `49 characters`
+
+## Adobe I/O State Store Consistency Guarantees
+
+**Strong consistency** is guaranteed for reads and writes within a single instance of the state sdk (returned by `stateLib.init()`).
+
+However, operations across multiple instances are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then 
+
+```javascript
+await a.put('key', 'value')
+await b.put('key', 'yolo')
+console.log(await a.get('key'))
+```
+
+might log either `value` or `yolo` but eventually `a.get('key')` will always return `yolo`. Note that atomicity is ensured, i.e.  `a.get('key')` will never return something like `valyoloue`.
+
 
 ## Troubleshooting
 
