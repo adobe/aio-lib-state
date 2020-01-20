@@ -3,5 +3,8 @@
       "include": [
           "jest"
       ]
-  }
+  },
+  "include": [
+    "lib/**/*.js"
+  ]  
 }
