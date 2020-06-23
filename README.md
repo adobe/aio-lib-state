@@ -71,7 +71,6 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 - Max state key size: `1024 bytes`
 - Max total state size: `10 GB`
 - Token expiry (need to re-init after expiry): `1 hour`
-- Namespace max length: `49 characters`
 
 ## Adobe I/O State Store Consistency Guarantees
 
