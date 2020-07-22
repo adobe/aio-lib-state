@@ -13,7 +13,7 @@ export type StateStorePutOptions = {
  * expiration=null
  * @property value - the value set by put
  */
-declare type StateStoreGetReturnValue = {
+export type StateStoreGetReturnValue = {
     expiration: string | null;
     value: any;
 };
@@ -21,7 +21,7 @@ declare type StateStoreGetReturnValue = {
 /**
  * Cloud State Management
  */
-declare class StateStore {
+export class StateStore {
     /**
      * Retrieves the state value for given key.
      * If the key doesn't exist returns undefined.
@@ -74,7 +74,7 @@ declare class StateStore {
  * @property ERROR_INTERNAL - this error is thrown when an unknown error is thrown by the underlying
  * DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`.
  */
-declare type StateLibErrors = {
+export type StateLibErrors = {
     ERROR_BAD_ARGUMENT: StateLibError;
     ERROR_NOT_IMPLEMENTED: StateLibError;
     ERROR_PAYLOAD_TOO_LARGE: StateLibError;
@@ -87,7 +87,7 @@ declare type StateLibErrors = {
  * @property namespace - user namespace
  * @property auth - auth key
  */
-declare type OpenWhiskCredentials = {
+export type OpenWhiskCredentials = {
     namespace: string;
     auth: string;
 };
@@ -100,7 +100,7 @@ declare type OpenWhiskCredentials = {
  * @property containerId - id for cosmosdb container within database
  * @property partitionKey - key for cosmosdb partition within container authorized by resource token
  */
-declare type AzureCosmosPartitionResourceCredentials = {
+export type AzureCosmosPartitionResourceCredentials = {
     endpoint: string;
     resourceToken: string;
     databaseId: string;
@@ -116,7 +116,7 @@ declare type AzureCosmosPartitionResourceCredentials = {
  * @property containerId - id for cosmosdb container within database
  * @property partitionKey - key for cosmosdb partition where data will be stored
  */
-declare type AzureCosmosMasterCredentials = {
+export type AzureCosmosMasterCredentials = {
     endpoint: string;
     masterKey: string;
     databaseId: string;
@@ -145,7 +145,7 @@ declare type AzureCosmosMasterCredentials = {
  * @param [config.tvm.cacheFile] - alternative tvm cache file, set to `false` to disable caching of temporary credentials.
  * @returns A StateStore instance
  */
-declare function init(config?: {
+export function init(config?: {
     ow?: OpenWhiskCredentials;
     cosmos?: AzureCosmosMasterCredentials | AzureCosmosPartitionResourceCredentials;
     tvm?: {
