@@ -54,6 +54,9 @@ Cloud State Management
     * *[.get(key)](#StateStore+get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
     * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[._get(key)](#StateStore+_get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
+    * *[._put(key, value, options)](#StateStore+_put) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[._delete(key)](#StateStore+_delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
 <a name="StateStore+get"></a>
 
@@ -89,6 +92,41 @@ Deletes a state key-value pair
 
 **Kind**: instance method of [<code>StateStore</code>](#StateStore)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exists  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | state key identifier |
+
+<a name="StateStore+_get"></a>
+
+### *stateStore.\_get(key) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue) - get response holding value and additional info  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | state key identifier |
+
+<a name="StateStore+_put"></a>
+
+### *stateStore.\_put(key, value, options) ⇒ <code>Promise.&lt;string&gt;</code>*
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Promise.&lt;string&gt;</code> - key  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | state key identifier |
+| value | <code>any</code> | state value |
+| options | <code>object</code> | state put options |
+
+<a name="StateStore+_delete"></a>
+
+### *stateStore.\_delete(key) ⇒ <code>Promise.&lt;string&gt;</code>*
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exists  
+**Access**: protected  
 
 | Param | Type | Description |
 | --- | --- | --- |
