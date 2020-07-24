@@ -57,21 +57,24 @@ beforeEach(async () => {
 // eslint-disable-next-line jsdoc/require-jsdoc
 async function testProviderErrorHandling (func, mock, fparams) {
   // eslint-disable-next-line jsdoc/require-jsdoc
-  async function testOne (status, expectCheck, isInternal, ...addArgs) {
-    const providerError = new Error('fakeProviderError')
-    if (status) providerError.code = status
+  async function testOne (status, errorMessage, expectCheck, isInternal, ...addArgs) {
+    const providerError = new Error(errorMessage)
+    if (status) {
+      providerError.code = status
+    }
 
     const expectedErrorDetails = { ...fparams }
-    if (isInternal) expectedErrorDetails._internal = providerError
+    if (isInternal) { expectedErrorDetails._internal = providerError }
     mock.mockReset()
     mock.mockRejectedValue(providerError)
     await global[expectCheck](func, ...addArgs, expectedErrorDetails)
   }
 
-  await testOne(403, 'expectToThrowForbidden')
-  await testOne(413, 'expectToThrowTooLarge')
-  await testOne(500, 'expectToThrowInternalWithStatus', true, 500)
-  await testOne(undefined, 'expectToThrowInternal', true)
+  await testOne(403, 'This is blocked by your Cosmos DB account firewall settings.', 'expectToThrowFirewall')
+  await testOne(403, 'fakeError', 'expectToThrowForbidden')
+  await testOne(413, 'fakeError', 'expectToThrowTooLarge')
+  await testOne(500, 'fakeError', 'expectToThrowInternalWithStatus', true, 500)
+  await testOne(undefined, 'fakeError', 'expectToThrowInternal', true)
   // when provider resolves with bad status which is not 404
   const providerResponse = {
     statusCode: 400
