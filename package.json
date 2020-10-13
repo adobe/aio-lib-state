@@ -1,6 +1,6 @@
 {
   "name": "@adobe/aio-lib-state",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "An Abstraction on top of Key Value Stores",
   "main": "index.js",
   "directories": {
