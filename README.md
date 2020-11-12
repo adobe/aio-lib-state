@@ -24,6 +24,8 @@ You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credent
 
 Alternatively, you can bring your own cloud db keys. As of now we only support Azure Cosmos.
 
+Please note that currently you must be a customer of [Project Firefly](https://www.adobe.io/apis/experienceplatform/project-firefly.html) to use this library. Project Firefly is a complete framework that enables enterprise developers to build and deploy custom web applications that extend Adobe Experience Cloud solutions and run on Adobe infrastructure.
+
 ## Install
 
 ```bash
