@@ -94,7 +94,7 @@ Note that atomicity is ensured, i.e.  `a.get('food')` will never return somethin
 
 ### Adobe I/O Runtime considerations
 
-State lib is expected to be used in Adobe I/O Runtime serverless actions. A new instance is expected to be created on every new invocation inside the main function of the serverless action as follows:
+State lib is expected to be used in Adobe I/O Runtime serverless actions. A new instance cans be created on every new invocation inside the main function of the serverless action as follows:
 
 ```javascript
 const State = require('@adobe/aio-sdk').State
@@ -104,9 +104,9 @@ function main (params) {
   // do operations on state
 ```
 
-It's important to understand that on every invocation a new State instance is created, meaning that operations will be only **eventually consistent** across invocations but **strongly consistent** within an invocation.
+It's important to understand that in this cas, on every invocation a new State instance is created, meaning that operations will be only **eventually consistent** across invocations but **strongly consistent** within an invocation.
 
-Please note that reusing the State instance by storing it in a global variable outside of the main function would not ensure **strongly consistent** across all invocations as the action could be executed on a separate Docker container.
+Also note that reusing the State instance by storing it in a global variable outside of the main function would not ensure **strong consistency** across all invocations as the action could be executed in a separate Docker container.
 
 Here is an example showcasing two invocations of the same action with an initial state `{ key: 'hello'}`:
 
