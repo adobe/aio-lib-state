@@ -94,7 +94,7 @@ Note that atomicity is ensured, i.e.  `a.get('food')` will never return somethin
 
 ### Adobe I/O Runtime considerations
 
-State lib is expected to be used in Adobe I/O Runtime serverless actions. A new instance can be created on every new invocation inside the main function of the serverless action as follows:
+State lib is expected to be used in Adobe I/O Runtime serverless actions. A new State instance can be created on every new invocation inside the main function of the serverless action as follows:
 
 ```javascript
 const State = require('@adobe/aio-sdk').State
@@ -118,6 +118,10 @@ Invocation A                          |     Invocation B                      |
 `state.get(key)` => returns bonjour   |                                       |
 |                                     | `state = State.init()`                |
 |                                     | `state.get(key)` => hello OR bonjour  |
+|                                     | `state.put(key, 'bonjour')`           |
+|                                     | `state.get(key)` => returns bonjour   |
+
+Because of **eventual consistency** across State instances, in invocation B, the first `state.get(key)` might return an older value although invocation A has updated the value already.
 
 ## Troubleshooting
 
