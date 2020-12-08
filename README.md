@@ -81,16 +81,16 @@ Operations across multiple State instances (returned by `stateLib.init()`) are *
 ```javascript
 const a = await state.init()
 const b = await state.init()
-await a.put('key', 'value')
-await b.put('key', 'yolo')
+await a.put('food', 'beans')
+await b.put('food', 'carrots')
 console.log(await a.get('key'))
 ```
 
-might log either `value` or `yolo` but eventually `a.get('key')` will always return `yolo`.
+might log either `beans` or `carrots` but eventually `a.get('food')` will always return `carrots`.
 
-Operations within a single instance are guaranteed to be **strongly consistent**.
+Operations within a single instance however are guaranteed to be **strongly consistent**.
 
-Note that atomicity is ensured, i.e.  `a.get('key')` will never return something like `valyoloue`.
+Note that atomicity is ensured, i.e.  `a.get('food')` will never return something like `beacarronsts`.
 
 ### Adobe I/O Runtime considerations
 
