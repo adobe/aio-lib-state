@@ -74,23 +74,57 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 
 ## Adobe I/O State Store Consistency Guarantees
 
-**Strong consistency** is guaranteed for reads and writes within a single instance of the state sdk (returned by `stateLib.init()`).
+### Consistency across State Instances
 
-However, operations across multiple instances are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then 
+Operations across multiple State instances (returned by `stateLib.init()`) are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then
 
 ```javascript
+const a = await state.init()
+const b = await state.init()
 await a.put('key', 'value')
 await b.put('key', 'yolo')
 console.log(await a.get('key'))
 ```
 
-might log either `value` or `yolo` but eventually `a.get('key')` will always return `yolo`. Note that atomicity is ensured, i.e.  `a.get('key')` will never return something like `valyoloue`.
+might log either `value` or `yolo` but eventually `a.get('key')` will always return `yolo`.
 
+Operations within a single instance are guaranteed to be **strongly consistent**.
+
+Note that atomicity is ensured, i.e.  `a.get('key')` will never return something like `valyoloue`.
+
+### Adobe I/O Runtime considerations
+
+State lib is expected to be used in Adobe I/O Runtime serverless actions. A new instance is expected to be created on every new invocation inside the main function of the serverless action as follows:
+
+```javascript
+const State = require('@adobe/aio-sdk').State
+
+function main (params) {
+  const state = await State.init()
+  // do operations on state
+```
+
+It's important to understand that on every invocation a new State instance is created, meaning that operations will be only **eventually consistent** across invocations but **strongly consistent** within an invocation.
+
+Please note that reusing the State instance by storing it in a global variable outside of the main function would not ensure **strongly consistent** across all invocations as the action could be executed on a separate Docker container.
+
+Here is an example showcasing two invocations of the same action with an initial state `{ key: 'hello'}`:
+
+Invocation A                          |     Invocation B                      |
+| :---------------------------------- | ----------------------------------:   |
+`state = State.init()`                |                                       |
+`state.get(key)` => returns hello     |                                       |
+`state.put(key, 'bonjour')`           |                                       |
+`state.get(key)` => returns bonjour   |                                       |
+|                                     | `state = State.init()`                |
+|                                     | `state.get(key)` => hello OR bonjour  |
 
 ## Troubleshooting
 
 ### `"[StateLib:ERROR_INTERNAL] unknown error response from provider with status: unknown"`
+
 - when using `@adobe/aio-lib-state` in an action bundled with **webpack** please make sure to turn off minification and enable resolving of es6 modules. Add the following lines to your webpack config:
+
 ```javascript
   optimization: {
     minimize: false
