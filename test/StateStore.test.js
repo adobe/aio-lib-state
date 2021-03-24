@@ -110,3 +110,20 @@ describe('delete', () => {
     expect(global.mockLogDebug).toHaveBeenCalledWith('delete \'key\'')
   })
 })
+
+describe('list', () => {
+  // eslint-disable-next-line jest/expect-expect
+  test('missing implementation', async () => {
+    const state = new StateStore(true)
+    await global.expectToThrowNotImplemented(state.list.bind(state, 'token'), '_list')
+  })
+
+  test('calls _list (part of interface)', async () => {
+    const state = new StateStore(true)
+    state._list = jest.fn()
+    await state.list('token')
+    expect(state._list).toHaveBeenCalledTimes(1)
+    expect(state._list).toHaveBeenCalledWith('token')
+    expect(global.mockLogDebug).toHaveBeenCalledWith('list \'token\'')
+  })
+})

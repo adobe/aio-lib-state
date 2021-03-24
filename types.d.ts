@@ -19,6 +19,30 @@ export type StateStoreGetReturnValue = {
 };
 
 /**
+ * StateStore key object
+ * @property key - state key identifier
+ * @property ttl - time to live in seconds
+ * @property timestamp - key timestamp
+ */
+export type StateStoreKeyObject = {
+    key: string;
+    ttl: number;
+    timestamp: number;
+};
+
+/**
+ * StateStore list return object
+ * @property StateStoreKeyObject - with details related to State Store keys
+ * @property hasMoreResults - flag to indicate whether there are more results
+ * @property continuationToken - used to fetch next batch of results
+ */
+export type StateStoreListReturnObject = {
+    StateStoreKeyObject: any;
+    hasMoreResults: boolean;
+    continuationToken: string;
+};
+
+/**
  * Cloud State Management
  */
 export class StateStore {
@@ -44,6 +68,12 @@ export class StateStore {
      */
     delete(key: string): Promise<string>;
     /**
+     * Retrieves all the keys.
+     * @param continuationToken - use in subsequent calls to get next set of keys in case of paginated results
+     * @returns array of keys and additional info
+     */
+    list(continuationToken: string): Promise<StateStoreListReturnObject[]>;
+    /**
      * @param key - state key identifier
      * @returns get response holding value and additional info
      */
@@ -60,9 +90,32 @@ export class StateStore {
      * @returns key of deleted state or `null` if state does not exists
      */
     protected _delete(key: string): Promise<string>;
+    /**
+     * @param continuationToken - use in subsequent calls to get next set of keys in case of paginated results
+     * @returns array of keys and additional info
+     */
+    protected _list(continuationToken: string): Promise<StateStoreListReturnObject[]>;
 }
 
-
+/**
+ * State lib custom errors.
+ * `e.sdkDetails` provides additional context for each error (e.g. function parameter)
+ * @property ERROR_BAD_ARGUMENT - this error is thrown when an argument is missing or has invalid type
+ * @property ERROR_NOT_IMPLEMENTED - this error is thrown when a method is not implemented or when calling
+ * methods directly on the abstract class (StateStore).
+ * @property ERROR_PAYLOAD_TOO_LARGE - this error is thrown when the state key, state value or underlying request payload size
+ * exceeds the specified limitations.
+ * @property ERROR_BAD_CREDENTIALS - this error is thrown when the supplied init credentials are invalid.
+ * @property ERROR_INTERNAL - this error is thrown when an unknown error is thrown by the underlying
+ * DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`.
+ */
+export type StateLibErrors = {
+    ERROR_BAD_ARGUMENT: StateLibError;
+    ERROR_NOT_IMPLEMENTED: StateLibError;
+    ERROR_PAYLOAD_TOO_LARGE: StateLibError;
+    ERROR_BAD_CREDENTIALS: StateLibError;
+    ERROR_INTERNAL: StateLibError;
+};
 
 /**
  * An object holding the OpenWhisk credentials

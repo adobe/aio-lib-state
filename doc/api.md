@@ -37,6 +37,12 @@
 <dt><a href="#StateStoreGetReturnValue">StateStoreGetReturnValue</a> : <code>object</code></dt>
 <dd><p>StateStore get return object</p>
 </dd>
+<dt><a href="#StateStoreKeyObject">StateStoreKeyObject</a> : <code>object</code></dt>
+<dd><p>StateStore key object</p>
+</dd>
+<dt><a href="#StateStoreListReturnObject">StateStoreListReturnObject</a> : <code>object</code></dt>
+<dd><p>StateStore list return object</p>
+</dd>
 <dt><a href="#StateLibErrors">StateLibErrors</a> : <code>object</code></dt>
 <dd><p>State lib custom errors.
 <code>e.sdkDetails</code> provides additional context for each error (e.g. function parameter)</p>
@@ -54,9 +60,11 @@ Cloud State Management
     * *[.get(key)](#StateStore+get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
     * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[.list(continuationToken)](#StateStore+list) ⇒ <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code>*
     * *[._get(key)](#StateStore+_get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
     * *[._put(key, value, options)](#StateStore+_put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[._delete(key)](#StateStore+_delete) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[._list(continuationToken)](#StateStore+_list) ⇒ <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code>*
 
 <a name="StateStore+get"></a>
 
@@ -97,6 +105,18 @@ Deletes a state key-value pair
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 
+<a name="StateStore+list"></a>
+
+### *stateStore.list(continuationToken) ⇒ <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code>*
+Retrieves all the keys.
+
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code> - array of keys and additional info  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| continuationToken | <code>string</code> | use in subsequent calls to get next set of keys in case of paginated results |
+
 <a name="StateStore+_get"></a>
 
 ### *stateStore.\_get(key) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
@@ -131,6 +151,17 @@ Deletes a state key-value pair
 | Param | Type | Description |
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
+
+<a name="StateStore+_list"></a>
+
+### *stateStore.\_list(continuationToken) ⇒ <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code>*
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Promise.&lt;Array.&lt;StateStoreListReturnObject&gt;&gt;</code> - array of keys and additional info  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| continuationToken | <code>string</code> | use in subsequent calls to get next set of keys in case of paginated results |
 
 <a name="init"></a>
 
@@ -225,6 +256,34 @@ StateStore get return object
 | --- | --- | --- |
 | expiration | <code>string</code> \| <code>null</code> | ISO date string of expiration time for the key-value pair, if the ttl is infinite expiration=null |
 | value | <code>any</code> | the value set by put |
+
+<a name="StateStoreKeyObject"></a>
+
+## StateStoreKeyObject : <code>object</code>
+StateStore key object
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | state key identifier |
+| ttl | <code>number</code> | time to live in seconds |
+| timestamp | <code>number</code> | key timestamp |
+
+<a name="StateStoreListReturnObject"></a>
+
+## StateStoreListReturnObject : <code>object</code>
+StateStore list return object
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| StateStoreKeyObject | <code>object</code> | with details related to State Store keys |
+| hasMoreResults | <code>boolean</code> | flag to indicate whether there are more results |
+| continuationToken | <code>string</code> | used to fetch next batch of results |
 
 <a name="StateLibErrors"></a>
 

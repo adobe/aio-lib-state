@@ -320,3 +320,99 @@ describe('_put', () => {
     await testProviderErrorHandling(state._put.bind(state, 'key', 'value', {}), cosmosUpsertMock, { key: 'key', value: 'value', options: {} })
   })
 })
+
+describe('_list', () => {
+  const cosmosItemsMock = jest.fn()
+  const cosmosQueryMock = jest.fn()
+  const cosmosFetchNextMock = jest.fn()
+  beforeEach(async () => {
+    cosmosItemsMock.mockReset()
+    cosmosQueryMock.mockReset()
+    cosmosFetchNextMock.mockReset()
+
+    cosmosQueryMock.mockReturnValue({
+      fetchNext: cosmosFetchNextMock
+    })
+    cosmosItemsMock.mockReturnValue({
+      query: cosmosQueryMock
+    })
+    cosmosContainerMock.mockReturnValue({
+      items: {
+        query: cosmosQueryMock
+      }
+    })
+  })
+
+  test('with valid keys hasMoreResults false', async () => {
+    const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
+    const queryCondition = { continuationToken: undefined, initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
+    const keys = [
+      { id: '__aio', ttl: -1, _ts: 123456 },
+      { id: 'test', ttl: -1, _ts: 123456 }
+    ]
+    const expectedKeys = [
+      { key: 'test', ttl: -1, timestamp: 123456 }
+    ]
+    cosmosFetchNextMock.mockResolvedValue({
+      resources: keys,
+      hasMoreResults: false
+    })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const res = await state._list()
+    expect(cosmosQueryMock).toHaveBeenCalledWith(queryStr, queryCondition)
+    expect(res.keys).toEqual(expectedKeys)
+    expect(res.hasMoreResults).toEqual(false)
+    expect(res.continuationToken).toEqual(undefined)
+  })
+
+  test('with valid keys hasMoreResults true and continuationToken', async () => {
+    const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
+    const queryCondition = { continuationToken: undefined, initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
+    const keys = [
+      { id: '__aio', ttl: -1, _ts: 123456 },
+      { id: 'test1', ttl: -1, _ts: 123456 },
+      { id: 'test2', ttl: -1, _ts: 123456 },
+      { id: 'test3', ttl: -1, _ts: 123456 },
+      { id: 'test4', ttl: -1, _ts: 123456 }
+    ]
+    const expectedKeys = [
+      { key: 'test1', ttl: -1, timestamp: 123456 },
+      { key: 'test2', ttl: -1, timestamp: 123456 },
+      { key: 'test3', ttl: -1, timestamp: 123456 },
+      { key: 'test4', ttl: -1, timestamp: 123456 }
+    ]
+    cosmosFetchNextMock.mockResolvedValue({
+      resources: keys,
+      hasMoreResults: true,
+      continuationToken: 'testtoken'
+    })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const res = await state._list()
+    expect(cosmosQueryMock).toHaveBeenCalledWith(queryStr, queryCondition)
+    expect(res.keys).toEqual(expectedKeys)
+    expect(res.hasMoreResults).toEqual(true)
+    expect(res.continuationToken).toEqual('testtoken')
+  })
+
+  test('with continuationToken passed to list function', async () => {
+    const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
+    const queryCondition = { continuationToken: 'testtoken', initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
+    const keys = [
+      { id: '__aio', ttl: -1, _ts: 123456 },
+      { id: 'test', ttl: -1, _ts: 123456 }
+    ]
+    const expectedKeys = [
+      { key: 'test', ttl: -1, timestamp: 123456 }
+    ]
+    cosmosFetchNextMock.mockResolvedValue({
+      resources: keys,
+      hasMoreResults: false
+    })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const res = await state._list('testtoken')
+    expect(cosmosQueryMock).toHaveBeenCalledWith(queryStr, queryCondition)
+    expect(res.keys).toEqual(expectedKeys)
+    expect(res.hasMoreResults).toEqual(false)
+    expect(res.continuationToken).toEqual(undefined)
+  })
+})
