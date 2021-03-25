@@ -347,7 +347,6 @@ describe('_list', () => {
     const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
     const queryCondition = { continuationToken: undefined, initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
     const keys = [
-      { id: '__aio', ttl: -1, _ts: 123456 },
       { id: 'test', ttl: -1, _ts: 123456 }
     ]
     const expectedKeys = [
@@ -369,7 +368,6 @@ describe('_list', () => {
     const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
     const queryCondition = { continuationToken: undefined, initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
     const keys = [
-      { id: '__aio', ttl: -1, _ts: 123456 },
       { id: 'test1', ttl: -1, _ts: 123456 },
       { id: 'test2', ttl: -1, _ts: 123456 },
       { id: 'test3', ttl: -1, _ts: 123456 },
@@ -398,7 +396,6 @@ describe('_list', () => {
     const queryStr = 'SELECT c.id,c.ttl,c._ts from c where c.partitionKey=\'fakePK\''
     const queryCondition = { continuationToken: 'testtoken', initialHeaders: { 'x-ms-documentdb-partitionkey': '["fakePK"]' } }
     const keys = [
-      { id: '__aio', ttl: -1, _ts: 123456 },
       { id: 'test', ttl: -1, _ts: 123456 }
     ]
     const expectedKeys = [
