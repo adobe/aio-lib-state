@@ -241,6 +241,38 @@ describe('_get', () => {
   })
 })
 
+describe('_getAllKeys', () => {
+  const cosmosItemsReadAllMock = jest.fn()
+  const cosmosItemsFetchAllMock = jest.fn()
+  beforeEach(async () => {
+    cosmosItemsReadAllMock.mockReset()
+    cosmosItemsFetchAllMock.mockReset()
+    cosmosContainerMock.mockReturnValue({
+      items: {
+        readAll: cosmosItemsReadAllMock.mockReturnValue({
+          fetchAll: cosmosItemsFetchAllMock
+        })
+      }
+    })
+  })
+  test('resources with or without id', async () => {
+    cosmosItemsFetchAllMock.mockResolvedValue({
+      resources: [{ id: 'id1' }, { id: 'id2' }, { nonid: 'nonid1' }]
+    })
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    const ret = await state._getAllKeys()
+    expect(ret).toEqual(['id1', 'id2'])
+    expect(cosmosItemsReadAllMock).toHaveBeenCalledTimes(1)
+    expect(cosmosItemsReadAllMock).toHaveBeenCalledWith({ partitionKey: state._cosmos.partitionKey })
+    expect(cosmosItemsFetchAllMock).toHaveBeenCalledTimes(1)
+  })
+  // eslint-disable-next-line jest/expect-expect
+  test('with error response from provider', async () => {
+    const state = await CosmosStateStore.init(fakeCosmosResourceCredentials)
+    await testProviderErrorHandling(state._getAllKeys.bind(state), cosmosItemsFetchAllMock)
+  })
+})
+
 describe('_delete', () => {
   const cosmosItemMock = jest.fn()
   const cosmosItemDeleteMock = jest.fn()
