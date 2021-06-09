@@ -18,7 +18,7 @@ governing permissions and limitations under the License.
 
 # Adobe I/O Lib State
 
-A JavaScript abstraction on top of distributed/cloud DBs that exposes a simple state persistence API.
+A Node JavaScript abstraction on top of distributed/cloud DBs that exposes a simple state persistence API.
 
 You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credentials.
 
