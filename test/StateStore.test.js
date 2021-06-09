@@ -48,6 +48,21 @@ describe('get', () => {
   })
 })
 
+describe('getAllKeys', () => {
+  // eslint-disable-next-line jest/expect-expect
+  test('missing implementation', async () => {
+    const state = new StateStore(true)
+    await global.expectToThrowNotImplemented(state.getAllKeys.bind(state), '_getAllKeys')
+  })
+  test('calls _getAllKeys (part of interface)', async () => {
+    const state = new StateStore(true)
+    state._getAllKeys = jest.fn()
+    await state.getAllKeys()
+    expect(state._getAllKeys).toHaveBeenCalledTimes(1)
+    expect(global.mockLogDebug).toHaveBeenCalledWith('getAllKeys')
+  })
+})
+
 describe('put', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {

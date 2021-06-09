@@ -16,8 +16,9 @@ governing permissions and limitations under the License.
 const stateLib = require('../index')
 
 const testKey = 'e2e_test_state_key'
+const multipleTestKeys = ['e2e_test_state_key_1', 'e2e_test_state_key_2']
 
-jest.setTimeout(30000) // thirty seconds per test
+jest.setTimeout(300000) // thirty seconds per test
 
 beforeEach(() => {
   expect.hasAssertions()
@@ -32,6 +33,7 @@ const initStateEnv = async (n = 1) => {
   const state = await stateLib.init() // { tvm: { cacheFile: false } } // keep cache for better perf?
   // make sure we delete the testKey, note that delete might fail as it is an op under test
   await state.delete(testKey)
+  await Promise.all(multipleTestKeys.map(async (testKey) => await state.delete(testKey)))
   return state
 }
 
@@ -76,6 +78,21 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
     expect(await state.delete(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
+  })
+
+  test('key-value basic test on one key with object value: write, write, getAllKeys, delete, delete, get', async () => {
+    const state = await initStateEnv()
+
+    const testValue = { some: 'value' }
+    await Promise.all(multipleTestKeys
+      .map(async (testKey) => expect(await state.get(testKey)).toEqual(undefined)))
+    await Promise.all(multipleTestKeys
+      .map(async (testKey) => expect(await state.put(testKey, testValue)).toEqual(testKey)))
+    expect(await state.getAllKeys()).toEqual(multipleTestKeys)
+    await Promise.all(multipleTestKeys
+      .map(async (testKey) => expect(await state.delete(testKey, testValue)).toEqual(testKey)))
+    await Promise.all(multipleTestKeys
+      .map(async (testKey) => expect(await state.get(testKey)).toEqual(undefined)))
   })
 
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {

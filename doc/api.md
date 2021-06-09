@@ -52,9 +52,11 @@ Cloud State Management
 
 * *[StateStore](#StateStore)*
     * *[.get(key)](#StateStore+get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
+    * *[.getAllKeys()](#StateStore+getAllKeys) ⇒ <code>Array.&lt;string&gt;</code>*
     * *[.put(key, value, [options])](#StateStore+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#StateStore+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[._get(key)](#StateStore+_get) ⇒ [<code>Promise.&lt;StateStoreGetReturnValue&gt;</code>](#StateStoreGetReturnValue)*
+    * *[._getAllKeys()](#StateStore+_getAllKeys) ⇒ <code>Array.&lt;string&gt;</code>*
     * *[._put(key, value, options)](#StateStore+_put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[._delete(key)](#StateStore+_delete) ⇒ <code>Promise.&lt;string&gt;</code>*
 
@@ -71,6 +73,14 @@ If the key doesn't exist returns undefined.
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 
+<a name="StateStore+getAllKeys"></a>
+
+### *stateStore.getAllKeys() ⇒ <code>Array.&lt;string&gt;</code>*
+Retrieves the keys of all stored values.
+If there are no keys returns undefined.
+
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Array.&lt;string&gt;</code> - Array with all the keys  
 <a name="StateStore+put"></a>
 
 ### *stateStore.put(key, value, [options]) ⇒ <code>Promise.&lt;string&gt;</code>*
@@ -108,6 +118,11 @@ Deletes a state key-value pair
 | --- | --- | --- |
 | key | <code>string</code> | state key identifier |
 
+<a name="StateStore+_getAllKeys"></a>
+
+### *stateStore.\_getAllKeys() ⇒ <code>Array.&lt;string&gt;</code>*
+**Kind**: instance method of [<code>StateStore</code>](#StateStore)  
+**Returns**: <code>Array.&lt;string&gt;</code> - Array with all the keys  
 <a name="StateStore+_put"></a>
 
 ### *stateStore.\_put(key, value, options) ⇒ <code>Promise.&lt;string&gt;</code>*
