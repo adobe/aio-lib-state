@@ -62,6 +62,7 @@ global.expectToThrowCustomError = async (func, code, words, expectedErrorDetails
 }
 
 global.expectToThrowBadArg = async (received, words, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_BAD_ARGUMENT', words, expectedErrorDetails)
+global.expectToThrowBadRequest = async (received, words, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_BAD_REQUEST', words, expectedErrorDetails)
 global.expectToThrowForbidden = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_BAD_CREDENTIALS', ['cannot', 'access', 'credentials'], expectedErrorDetails)
 global.expectToThrowFirewall = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_FIREWALL', ['your', 'IP', 'blocked', 'firewall'], expectedErrorDetails)
 global.expectToThrowInternalWithStatus = async (received, status, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_INTERNAL', ['' + status], expectedErrorDetails)

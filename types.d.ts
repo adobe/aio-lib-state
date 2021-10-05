@@ -62,7 +62,27 @@ export class StateStore {
     protected _delete(key: string): Promise<string>;
 }
 
-
+/**
+ * State lib custom errors.
+ * `e.sdkDetails` provides additional context for each error (e.g. function parameter)
+ * @property ERROR_BAD_ARGUMENT - this error is thrown when an argument is missing or has invalid type
+ * @property ERROR_BAD_REQUEST - this error is thrown when an argument has an illegal value.
+ * @property ERROR_NOT_IMPLEMENTED - this error is thrown when a method is not implemented or when calling
+ * methods directly on the abstract class (StateStore).
+ * @property ERROR_PAYLOAD_TOO_LARGE - this error is thrown when the state key, state value or underlying request payload size
+ * exceeds the specified limitations.
+ * @property ERROR_BAD_CREDENTIALS - this error is thrown when the supplied init credentials are invalid.
+ * @property ERROR_INTERNAL - this error is thrown when an unknown error is thrown by the underlying
+ * DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`.
+ */
+export type StateLibErrors = {
+    ERROR_BAD_ARGUMENT: StateLibError;
+    ERROR_BAD_REQUEST: StateLibError;
+    ERROR_NOT_IMPLEMENTED: StateLibError;
+    ERROR_PAYLOAD_TOO_LARGE: StateLibError;
+    ERROR_BAD_CREDENTIALS: StateLibError;
+    ERROR_INTERNAL: StateLibError;
+};
 
 /**
  * An object holding the OpenWhisk credentials
