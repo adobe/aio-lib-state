@@ -83,7 +83,7 @@ const a = await state.init()
 const b = await state.init()
 await a.put('food', 'beans')
 await b.put('food', 'carrots')
-console.log(await a.get('key'))
+console.log(await a.get('food'))
 ```
 
 might log either `beans` or `carrots` but eventually `a.get('food')` will always return `carrots`.
