@@ -41,6 +41,7 @@ const fakeCosmosTVMResponse = {
 const cosmosDatabaseMock = jest.fn()
 const cosmosContainerMock = jest.fn()
 beforeEach(async () => {
+  CosmosStateStore.inMemoryInstance = {}
   cosmos.CosmosClient.mockReset()
   cosmosContainerMock.mockReset()
   cosmosDatabaseMock.mockReset()
@@ -168,6 +169,13 @@ describe('init', () => {
       test('with masterKey', async () => {
         await testInitOK(fakeCosmosMasterCredentials)
         checkInitDebugLogNoSecrets(fakeCosmosMasterCredentials.masterKey)
+      })
+      test('successive calls should reuse the CosmosStateStore instance', async () => {
+        await testInitOK(fakeCosmosTVMResponse)
+        checkInitDebugLogNoSecrets(fakeCosmosTVMResponse.resourceToken)
+        cosmos.CosmosClient.mockReset()
+        await CosmosStateStore.init(fakeCosmosTVMResponse)
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
       })
     })
   })
