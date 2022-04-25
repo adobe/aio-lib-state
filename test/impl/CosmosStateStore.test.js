@@ -17,6 +17,8 @@ const cloneDeep = require('lodash.clonedeep')
 const cosmos = require('@azure/cosmos')
 jest.mock('@azure/cosmos')
 
+const stateLib = require('../../index')
+
 const fakeCosmosResourceCredentials = {
   endpoint: 'https://fake.com',
   resourceToken: 'fakeToken',
@@ -172,15 +174,24 @@ describe('init', () => {
       })
       test('successive calls should reuse the CosmosStateStore instance - with resourceToken', async () => {
         await testInitOK(fakeCosmosTVMResponse)
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
         cosmos.CosmosClient.mockReset()
         await CosmosStateStore.init(fakeCosmosTVMResponse)
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
       })
       test('successive calls should reuse the CosmosStateStore instance - with masterkey', async () => {
         await testInitOK(fakeCosmosMasterCredentials)
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
         cosmos.CosmosClient.mockReset()
         await CosmosStateStore.init(fakeCosmosMasterCredentials)
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
+      })
+      test('No reuse for BYO creds', async () => {
+        await stateLib.init({ cosmos: fakeCosmosMasterCredentials })
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
+        await stateLib.init({ cosmos: fakeCosmosMasterCredentials })
+        // New CosmosClient instance generated again
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(2)
       })
     })
   })
