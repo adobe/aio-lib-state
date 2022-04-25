@@ -170,11 +170,16 @@ describe('init', () => {
         await testInitOK(fakeCosmosMasterCredentials)
         checkInitDebugLogNoSecrets(fakeCosmosMasterCredentials.masterKey)
       })
-      test('successive calls should reuse the CosmosStateStore instance', async () => {
+      test('successive calls should reuse the CosmosStateStore instance - with resourceToken', async () => {
         await testInitOK(fakeCosmosTVMResponse)
-        checkInitDebugLogNoSecrets(fakeCosmosTVMResponse.resourceToken)
         cosmos.CosmosClient.mockReset()
         await CosmosStateStore.init(fakeCosmosTVMResponse)
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
+      })
+      test('successive calls should reuse the CosmosStateStore instance - with masterkey', async () => {
+        await testInitOK(fakeCosmosMasterCredentials)
+        cosmos.CosmosClient.mockReset()
+        await CosmosStateStore.init(fakeCosmosMasterCredentials)
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
       })
     })
