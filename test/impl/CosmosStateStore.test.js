@@ -56,6 +56,7 @@ beforeEach(async () => {
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 async function testProviderErrorHandling (func, mock, fparams) {
+  const illegalId = "The following characters are restricted and cannot be used in the Id property: '/', '\\', '?', '#' "
   // eslint-disable-next-line jsdoc/require-jsdoc
   async function testOne (status, errorMessage, expectCheck, isInternal, ...addArgs) {
     const providerError = new Error(errorMessage)
@@ -75,6 +76,7 @@ async function testProviderErrorHandling (func, mock, fparams) {
   await testOne(413, 'fakeError', 'expectToThrowTooLarge')
   await testOne(500, 'fakeError', 'expectToThrowInternalWithStatus', true, 500)
   await testOne(undefined, 'fakeError', 'expectToThrowInternal', true)
+  await testOne(undefined, 'contains illegal chars', 'expectToThrowBadRequest', false, [illegalId])
   // when provider resolves with bad status which is not 404
   const providerResponse = {
     statusCode: 400

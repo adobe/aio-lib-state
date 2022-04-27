@@ -14,6 +14,7 @@ governing permissions and limitations under the License.
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
 const stateLib = require('../index')
+const { codes } = require('../lib/StateStoreError')
 
 const testKey = 'e2e_test_state_key'
 const multipleTestKeys = ['e2e_test_state_key_1', 'e2e_test_state_key_2']
@@ -116,6 +117,18 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
     await waitFor(3000) // give it one more sec - azure ttl is not so precise
     expect(await state.get(testKey)).toEqual(undefined)
+  })
+
+  test('throw error when get/put with invalid keys', async () => {
+    const invalidChars = "The following characters are restricted and cannot be used in the Id property: '/', '\\', '?', '#' "
+    const invalidKey = 'invalid/key'
+    const state = await initStateEnv()
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+      messageValues: [invalidChars]
+    }))
+    await expect(state.get(invalidKey)).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+      messageValues: [invalidChars]
+    }))
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {

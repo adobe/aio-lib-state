@@ -81,6 +81,7 @@ describe('put', () => {
     await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', 'options'), ['object', 'options'], { ...expectedDetails, options: 'options' })
     await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { nonexiting__option: 'value' }), ['nonexiting__option', 'not allowed'], { ...expectedDetails, options: { nonexiting__option: 'value' } })
     await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { ttl: 'value' }), ['ttl', 'number'], { ...expectedDetails, options: { ttl: 'value' } })
+    await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { ttl: '1' }), ['ttl', 'number'], { ...expectedDetails, options: { ttl: '1' } })
   })
   test('calls _put with default ttl when options is undefined or options.ttl is = 0', async () => {
     const state = new StateStore(true)

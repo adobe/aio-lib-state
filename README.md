@@ -24,7 +24,7 @@ You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credent
 
 Alternatively, you can bring your own cloud db keys. As of now we only support Azure Cosmos.
 
-Please note that currently you must be a customer of [Project Firefly](https://www.adobe.io/apis/experienceplatform/project-firefly.html) to use this library. Project Firefly is a complete framework that enables enterprise developers to build and deploy custom web applications that extend Adobe Experience Cloud solutions and run on Adobe infrastructure.
+Please note that currently you must be a customer of [Adobe Developer App Builder](https://www.adobe.io/apis/experienceplatform/project-firefly.html) to use this library. App Builder is a complete framework that enables enterprise developers to build and deploy custom web applications that extend Adobe Experience Cloud solutions and run on Adobe infrastructure.
 
 ## Install
 
@@ -37,10 +37,7 @@ npm install @adobe/aio-lib-state
 ```js
   const stateLib = require('@adobe/aio-lib-state')
 
-  // init
-  // init sdk using OpenWhisk credentials
-  const state = await stateLib.init({ ow: { namespace, auth } })
-  // init when env vars __OW_API_KEY and __OW_NAMESPACE are set (e.g. when running in an OpenWhisk action)
+  // init when running in an Adobe I/O Runtime action (OpenWhisk) (uses env vars __OW_API_KEY and __OW_NAMESPACE automatically)
   const state = await stateLib.init()
   // or if you want to use your own cloud DB account (make sure your partition key path is /partitionKey)
   const state = await stateLib.init({ cosmos: { endpoint, masterKey, databaseId, containerId, partitionKey } })
@@ -86,7 +83,7 @@ const a = await state.init()
 const b = await state.init()
 await a.put('food', 'beans')
 await b.put('food', 'carrots')
-console.log(await a.get('key'))
+console.log(await a.get('food'))
 ```
 
 might log either `beans` or `carrots` but eventually `a.get('food')` will always return `carrots`.

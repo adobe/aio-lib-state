@@ -253,6 +253,7 @@ State lib custom errors.
 | Name | Type | Description |
 | --- | --- | --- |
 | ERROR_BAD_ARGUMENT | <code>StateLibError</code> | this error is thrown when an argument is missing or has invalid type |
+| ERROR_BAD_REQUEST | <code>StateLibError</code> | this error is thrown when an argument has an illegal value. |
 | ERROR_NOT_IMPLEMENTED | <code>StateLibError</code> | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
 | ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
 | ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |

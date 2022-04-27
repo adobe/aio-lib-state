@@ -1,6 +1,6 @@
 {
   "name": "@adobe/aio-lib-state",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "An Abstraction on top of Key Value Stores",
   "main": "index.js",
   "directories": {
@@ -55,7 +55,7 @@
     "@adobe/aio-lib-core-logging": "^1.1.2",
     "@adobe/aio-lib-core-tvm": "^2.0.0",
     "@azure/cosmos": "^3.5.0",
-    "@hapi/joi": "^16.1.7",
+    "joi": "^17.4.2",
     "lodash.clonedeep": "^4.5.0"
   }
 }
