@@ -37,6 +37,8 @@
 <dt><a href="#StateStoreGetReturnValue">StateStoreGetReturnValue</a> : <code>object</code></dt>
 <dd><p>StateStore get return object</p>
 </dd>
+<dt><a href="#StateLibError">StateLibError</a> : <code>Object</code></dt>
+<dd></dd>
 <dt><a href="#StateLibErrors">StateLibErrors</a> : <code>object</code></dt>
 <dd><p>State lib custom errors.
 <code>e.sdkDetails</code> provides additional context for each error (e.g. function parameter)</p>
@@ -226,6 +228,19 @@ StateStore get return object
 | expiration | <code>string</code> \| <code>null</code> | ISO date string of expiration time for the key-value pair, if the ttl is infinite expiration=null |
 | value | <code>any</code> | the value set by put |
 
+<a name="StateLibError"></a>
+
+## StateLibError : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| message | <code>string</code> | The message for the Error |
+| code | <code>string</code> | The code for the Error |
+| sdk | <code>string</code> | The SDK associated with the Error |
+| sdkDetails | <code>Object</code> | The SDK details associated with the Error |
+
 <a name="StateLibErrors"></a>
 
 ## StateLibErrors : <code>object</code>
@@ -237,10 +252,10 @@ State lib custom errors.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ERROR_BAD_ARGUMENT | <code>StateLibError</code> | this error is thrown when an argument is missing or has invalid type |
-| ERROR_BAD_REQUEST | <code>StateLibError</code> | this error is thrown when an argument has an illegal value. |
-| ERROR_NOT_IMPLEMENTED | <code>StateLibError</code> | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
-| ERROR_PAYLOAD_TOO_LARGE | <code>StateLibError</code> | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
-| ERROR_BAD_CREDENTIALS | <code>StateLibError</code> | this error is thrown when the supplied init credentials are invalid. |
-| ERROR_INTERNAL | <code>StateLibError</code> | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
+| ERROR_BAD_ARGUMENT | [<code>StateLibError</code>](#StateLibError) | this error is thrown when an argument is missing or has invalid type |
+| ERROR_BAD_REQUEST | [<code>StateLibError</code>](#StateLibError) | this error is thrown when an argument has an illegal value. |
+| ERROR_NOT_IMPLEMENTED | [<code>StateLibError</code>](#StateLibError) | this error is thrown when a method is not implemented or when calling methods directly on the abstract class (StateStore). |
+| ERROR_PAYLOAD_TOO_LARGE | [<code>StateLibError</code>](#StateLibError) | this error is thrown when the state key, state value or underlying request payload size exceeds the specified limitations. |
+| ERROR_BAD_CREDENTIALS | [<code>StateLibError</code>](#StateLibError) | this error is thrown when the supplied init credentials are invalid. |
+| ERROR_INTERNAL | [<code>StateLibError</code>](#StateLibError) | this error is thrown when an unknown error is thrown by the underlying DB provider or TVM server for credential exchange. More details can be found in `e.sdkDetails._internal`. |
 
