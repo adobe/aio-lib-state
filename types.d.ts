@@ -73,6 +73,19 @@ export class StateStore {
 }
 
 /**
+ * @property message - The message for the Error
+ * @property code - The code for the Error
+ * @property sdk - The SDK associated with the Error
+ * @property sdkDetails - The SDK details associated with the Error
+ */
+export type StateLibError = {
+    message: string;
+    code: string;
+    sdk: string;
+    sdkDetails: any;
+};
+
+/**
  * State lib custom errors.
  * `e.sdkDetails` provides additional context for each error (e.g. function parameter)
  * @property ERROR_BAD_ARGUMENT - this error is thrown when an argument is missing or has invalid type
