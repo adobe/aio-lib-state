@@ -80,6 +80,7 @@ async function testProviderErrorHandling (func, mock, fparams) {
   await testOne(500, 'fakeError', 'expectToThrowInternalWithStatus', true, 500)
   await testOne(undefined, 'fakeError', 'expectToThrowInternal', true)
   await testOne(undefined, 'contains illegal chars', 'expectToThrowBadRequest', false, [illegalId])
+  await testOne(429, 'fakeError', 'expectToThrowDBRateLimited')
   // when provider resolves with bad status which is not 404
   const providerResponse = {
     statusCode: 400
