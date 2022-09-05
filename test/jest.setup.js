@@ -69,3 +69,4 @@ global.expectToThrowInternalWithStatus = async (received, status, expectedErrorD
 global.expectToThrowInternal = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_INTERNAL', ['unknown'], expectedErrorDetails)
 global.expectToThrowNotImplemented = async (received, methodName) => global.expectToThrowCustomError(received, 'ERROR_NOT_IMPLEMENTED', ['not', 'implemented', methodName], {})
 global.expectToThrowTooLarge = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_PAYLOAD_TOO_LARGE', ['payload', 'is', 'too', 'large'], expectedErrorDetails)
+global.expectToThrowRequestRateTooHigh = async (received, expectedErrorDetails) => global.expectToThrowCustomError(received, 'ERROR_REQUEST_RATE_TOO_HIGH', ['Request', 'rate', 'too', 'high'], expectedErrorDetails)
