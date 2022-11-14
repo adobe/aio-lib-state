@@ -38,6 +38,14 @@ describe('get', () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.get.bind(state, 123), ['string', 'key'], { key: 123 })
   })
+  // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
+  })
   test('calls _get (part of interface)', async () => {
     const state = new StateStore(true)
     state._get = jest.fn()
@@ -58,6 +66,14 @@ describe('put', () => {
   test('bad key type', async () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.put.bind(state, 123, 'value', {}), ['string', 'key'], { key: 123, value: 'value', options: {} })
+  })
+  // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
   })
   // eslint-disable-next-line jest/expect-expect
   test('bad options', async () => {
@@ -101,6 +117,14 @@ describe('delete', () => {
   test('bad key type', async () => {
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.delete.bind(state, 123), ['string', 'key'], { key: 123 })
+  })
+  // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
   })
   test('calls _delete (part of interface)', async () => {
     const state = new StateStore(true)

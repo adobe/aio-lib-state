@@ -70,7 +70,7 @@ Apply when init with OW credentials (and not own cloud DB credentials):
 - Max state key size: `1024 bytes`
 - Max total state size: `10 GB`
 - Token expiry (need to re-init after expiry): `1 hour`
-- Non supported characters for state keys are: `'/', '\\', '?', '#'`
+- Non supported characters for state keys are: `'/', '\', '?', '#'`
 
 ## Adobe I/O State Store Consistency Guarantees
 
