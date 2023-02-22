@@ -35,7 +35,7 @@
   ],
   "devDependencies": {
     "@types/hapi__joi": "^16.0.1",
-    "@types/jest": "^25.1.0",
+    "@types/jest": "^29.4.0",
     "codecov": "^3.6.1",
     "eslint": "^6.5.1",
     "eslint-config-standard": "^14.1.0",
