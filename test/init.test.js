@@ -33,6 +33,7 @@ describe('init', () => {
       resourceToken: 'fakeToken'
     }
     test('with cosmos config', async () => {
+      expect.hasAssertions()
       await stateLib.init({ cosmos: fakeCosmosConfig })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeCosmosConfig)
@@ -64,6 +65,7 @@ describe('init', () => {
       })
     })
     test('when tvm options', async () => {
+      expect.hasAssertions()
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
       await stateLib.init({ ow: fakeOWCreds, tvm: fakeTVMOptions })
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
@@ -74,6 +76,7 @@ describe('init', () => {
       checkInitDebugLogNoSecrets(fakeOWCreds.auth)
     })
     test('when empty config to be able to pass OW creds as env variables', async () => {
+      expect.hasAssertions()
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
       await stateLib.init()
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
@@ -84,6 +87,7 @@ describe('init', () => {
     })
     // eslint-disable-next-line jest/expect-expect
     test('when tvm rejects with a 401 (throws wrapped error)', async () => {
+      expect.hasAssertions()
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 401 }
       cosmosTVMMock.mockRejectedValue(e)
@@ -91,12 +95,14 @@ describe('init', () => {
     })
     // eslint-disable-next-line jest/expect-expect
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
+      expect.hasAssertions()
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 403 }
       cosmosTVMMock.mockRejectedValue(e)
       await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
     })
     test('when tvm rejects with another status code (throws tvm error)', async () => {
+      expect.hasAssertions()
       const tvmError = new Error('tvm error')
       tvmError.sdkDetails = { fake: 'details', status: 500 }
       cosmosTVMMock.mockRejectedValue(tvmError)

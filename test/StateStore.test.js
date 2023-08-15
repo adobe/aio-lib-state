@@ -16,6 +16,7 @@ const { StateStore } = require('../lib/StateStore')
 describe('init', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
+    expect.hasAssertions()
     await global.expectToThrowNotImplemented(StateStore.init.bind(StateStore), 'init')
   })
 })
@@ -23,6 +24,7 @@ describe('init', () => {
 describe('constructor', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
+    expect.hasAssertions()
     await global.expectToThrowNotImplemented(() => new StateStore(false), 'StateStore')
   })
 })
@@ -30,15 +32,27 @@ describe('constructor', () => {
 describe('get', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.get.bind(state, 'key'), '_get')
   })
   // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.get.bind(state, 123), ['string', 'key'], { key: 123 })
   })
+  // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    expect.hasAssertions()
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
+  })
   test('calls _get (part of interface)', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     state._get = jest.fn()
     await state.get('key')
@@ -66,16 +80,28 @@ describe('getAllKeys', () => {
 describe('put', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.put.bind(state, 'key', 'value'), '_put')
   })
   // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.put.bind(state, 123, 'value', {}), ['string', 'key'], { key: 123, value: 'value', options: {} })
   })
   // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    expect.hasAssertions()
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
+  })
+  // eslint-disable-next-line jest/expect-expect
   test('bad options', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     const expectedDetails = { key: 'key', value: 'value' }
     await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', 'options'), ['object', 'options'], { ...expectedDetails, options: 'options' })
@@ -84,6 +110,7 @@ describe('put', () => {
     await global.expectToThrowBadArg(state.put.bind(state, 'key', 'value', { ttl: '1' }), ['ttl', 'number'], { ...expectedDetails, options: { ttl: '1' } })
   })
   test('calls _put with default ttl when options is undefined or options.ttl is = 0', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     state._put = jest.fn()
     await state.put('key', 'value')
@@ -97,6 +124,7 @@ describe('put', () => {
     expect(global.mockLogDebug).toHaveBeenCalledWith(`put 'key' with ttl ${StateStore.DefaultTTL}`)
   })
   test('calls _put with custom ttl when options.ttl is set', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     state._put = jest.fn()
     await state.put('key', 'value', { ttl: 99 })
@@ -109,15 +137,27 @@ describe('put', () => {
 describe('delete', () => {
   // eslint-disable-next-line jest/expect-expect
   test('missing implementation', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowNotImplemented(state.delete.bind(state, 'key'), '_delete')
   })
   // eslint-disable-next-line jest/expect-expect
   test('bad key type', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     await global.expectToThrowBadArg(state.delete.bind(state, 123), ['string', 'key'], { key: 123 })
   })
+  // eslint-disable-next-line jest/expect-expect
+  test('bad key characters', async () => {
+    expect.hasAssertions()
+    const state = new StateStore(true)
+    await global.expectToThrowBadArg(state.put.bind(state, '?test', 'value', {}), ['Key', 'cannot', 'contain'], { key: '?test', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't#est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't#est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 't\\est', 'value', {}), ['Key', 'cannot', 'contain'], { key: 't\\est', value: 'value', options: {} })
+    await global.expectToThrowBadArg(state.put.bind(state, 'test/', 'value', {}), ['Key', 'cannot', 'contain'], { key: 'test/', value: 'value', options: {} })
+  })
   test('calls _delete (part of interface)', async () => {
+    expect.hasAssertions()
     const state = new StateStore(true)
     state._delete = jest.fn()
     await state.delete('key', 'value')
