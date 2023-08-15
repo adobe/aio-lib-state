@@ -34,7 +34,7 @@
     "key-value"
   ],
   "devDependencies": {
-    "@types/hapi__joi": "^16.0.1",
+    "@types/hapi__joi": "^17.1.9",
     "@types/jest": "^29.5.0",
     "codecov": "^3.6.1",
     "eslint": "^8",
