@@ -188,9 +188,9 @@ describe('init', () => {
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
       })
       test('No reuse for BYO creds', async () => {
-        await stateLib.init({ cosmos: fakeCosmosMasterCredentials })
+        await stateLib.init({ cosmos: fakeCosmosMasterCredentials, provider: 'cosmos' })
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
-        await stateLib.init({ cosmos: fakeCosmosMasterCredentials })
+        await stateLib.init({ cosmos: fakeCosmosMasterCredentials, provider: 'cosmos' })
         // New CosmosClient instance generated again
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(2)
       })

@@ -33,7 +33,7 @@ describe('init', () => {
       resourceToken: 'fakeToken'
     }
     test('with cosmos config', async () => {
-      await stateLib.init({ cosmos: fakeCosmosConfig })
+      await stateLib.init({ cosmos: fakeCosmosConfig, provider: 'cosmos' })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
       expect(CosmosStateStore.init).toHaveBeenCalledWith(fakeCosmosConfig)
       expect(TvmClient.init).toHaveBeenCalledTimes(0)
@@ -65,7 +65,7 @@ describe('init', () => {
     })
     test('when tvm options', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
-      await stateLib.init({ ow: fakeOWCreds, tvm: fakeTVMOptions })
+      await stateLib.init({ ow: fakeOWCreds, tvm: fakeTVMOptions, provider: 'cosmos' })
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: fakeOWCreds, ...fakeTVMOptions })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
@@ -75,7 +75,7 @@ describe('init', () => {
     })
     test('when empty config to be able to pass OW creds as env variables', async () => {
       cosmosTVMMock.mockResolvedValue(fakeTVMResponse)
-      await stateLib.init()
+      await stateLib.init({ provider: 'cosmos' })
       expect(TvmClient.init).toHaveBeenCalledTimes(1)
       expect(TvmClient.init).toHaveBeenCalledWith({ ow: undefined })
       expect(CosmosStateStore.init).toHaveBeenCalledTimes(1)
@@ -87,20 +87,20 @@ describe('init', () => {
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 401 }
       cosmosTVMMock.mockRejectedValue(e)
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds, provider: 'cosmos' }), e.sdkDetails)
     })
     // eslint-disable-next-line jest/expect-expect
     test('when tvm rejects with a 403 (throws wrapped error)', async () => {
       const e = new Error('tvm error')
       e.sdkDetails = { fake: 'details', status: 403 }
       cosmosTVMMock.mockRejectedValue(e)
-      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds }), e.sdkDetails)
+      await global.expectToThrowForbidden(stateLib.init.bind(stateLib, { ow: fakeOWCreds, provider: 'cosmos' }), e.sdkDetails)
     })
     test('when tvm rejects with another status code (throws tvm error)', async () => {
       const tvmError = new Error('tvm error')
       tvmError.sdkDetails = { fake: 'details', status: 500 }
       cosmosTVMMock.mockRejectedValue(tvmError)
-      return expect(stateLib.init({ ow: fakeOWCreds })).rejects.toThrow(tvmError)
+      return expect(stateLib.init({ ow: fakeOWCreds, provider: 'cosmos' })).rejects.toThrow(tvmError)
     })
   })
 })
