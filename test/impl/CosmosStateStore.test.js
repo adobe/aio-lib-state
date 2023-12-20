@@ -181,6 +181,7 @@ describe('init', () => {
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(0)
       })
       test('successive calls should reuse the CosmosStateStore instance - with masterkey', async () => {
+        // note this test may be confusing as no reuse is made with BYO credentials, but the cache is actually deleted by the top level init file. See test below.
         await testInitOK(fakeCosmosMasterCredentials)
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
         cosmos.CosmosClient.mockReset()
@@ -193,6 +194,17 @@ describe('init', () => {
         await stateLib.init({ cosmos: fakeCosmosMasterCredentials, provider: 'cosmos' })
         // New CosmosClient instance generated again
         expect(cosmos.CosmosClient).toHaveBeenCalledTimes(2)
+      })
+      test('No reuse if TVM credential expiration changed', async () => {
+        await testInitOK(fakeCosmosTVMResponse)
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(1)
+        await CosmosStateStore.init({ ...fakeCosmosTVMResponse, expiration: new Date(0).toISOString() })
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(2)
+        await CosmosStateStore.init({ ...fakeCosmosTVMResponse, expiration: new Date(1).toISOString() })
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(3)
+        // double check, same credentials no additional call
+        await CosmosStateStore.init({ ...fakeCosmosTVMResponse, expiration: new Date(1).toISOString() })
+        expect(cosmos.CosmosClient).toHaveBeenCalledTimes(3)
       })
     })
   })

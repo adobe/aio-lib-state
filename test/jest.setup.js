@@ -29,7 +29,6 @@ jest.doMock('@adobe/aio-lib-core-logging', function () {
 })
 
 beforeEach(() => {
-  expect.hasAssertions()
   jest.restoreAllMocks()
   global.mockLogDebug.mockReset()
   global.mockLogError.mockReset()
@@ -42,7 +41,7 @@ global.expectToThrowCustomError = async (func, code, words, expectedErrorDetails
   } catch (e) {
     expect({ name: e.name, code: e.code, sdkDetails: e.sdkDetails, message: e.message }).toEqual(expect.objectContaining({
       name: 'StateLibError',
-      code: code,
+      code,
       sdkDetails: expectedErrorDetails
     }))
 
