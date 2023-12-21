@@ -160,7 +160,7 @@ describe('put', () => {
     store = await AdobeStateStore.init(fakeCredentials)
   })
 
-  test('success (string value)', async () => {
+  test('success (string value) no ttl', async () => {
     const key = 'valid-key'
     const value = 'some-value'
     const fetchResponseJson = {}
@@ -168,6 +168,17 @@ describe('put', () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
 
     const returnKey = await store.put(key, value)
+    expect(returnKey).toEqual(key)
+  })
+
+  test('success (string value) with ttl', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+    const fetchResponseJson = {}
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const returnKey = await store.put(key, value, { ttl: 999 })
     expect(returnKey).toEqual(key)
   })
 
@@ -329,7 +340,7 @@ describe('private methods', () => {
       const store = await AdobeStateStore.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/${key}`)
+      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -345,7 +356,7 @@ describe('private methods', () => {
       const store = await AdobeStateStore.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
     })
   })
 })
