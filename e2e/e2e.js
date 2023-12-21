@@ -16,6 +16,8 @@ governing permissions and limitations under the License.
 const stateLib = require('../index')
 const path = require('node:path')
 const { codes } = require('../lib/AdobeStateStoreError')
+const { MAX_TTL_SECONDS } = require('../lib/constants')
+
 // load .env values in the e2e folder, if any
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
@@ -48,7 +50,8 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     process.env.__OW_NAMESPACE = process.env.TEST_NAMESPACE_1 + 'bad'
 
     try {
-      await stateLib.init()
+      const store = await stateLib.init()
+      await store.get('something')
     } catch (e) {
       expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
         name: 'AdobeStateLibError',
@@ -69,49 +72,42 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await state.get(testKey)).toEqual(undefined)
   })
 
-  test('key-value basic test on one key with object value: get, write, get, delete, get', async () => {
-    const state = await initStateEnv()
-
-    const testValue = { a: 'fake', object: { with: { multiple: 'layers' }, that: { dreams: { of: { being: 'real' } } } } }
-
-    expect(await state.get(testKey)).toEqual(undefined)
-    expect(await state.put(testKey, testValue)).toEqual(testKey)
-    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
-    expect(await state.delete(testKey, testValue)).toEqual(testKey)
-    expect(await state.get(testKey)).toEqual(undefined)
-  })
-
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {
     const state = await initStateEnv()
 
-    const testValue = { an: 'object' }
+    const testValue = 'test value'
+    let res, resTime
 
     // 1. test default ttl = 1 day
     expect(await state.put(testKey, testValue)).toEqual(testKey)
-    let res = await state.get(testKey)
-    expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
-    expect(new Date(res.expiration).getTime()).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
+    res = await state.get(testKey)
+    resTime = new Date(res.expiration).getTime()
+    expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
+    expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
-    // 2. test infinite ttl
+    // 2. test max ttl
+    const nowPlus365Days = new Date(MAX_TTL_SECONDS).getTime()
     expect(await state.put(testKey, testValue, { ttl: -1 })).toEqual(testKey)
-    expect(await state.get(testKey)).toEqual(expect.objectContaining({ expiration: null }))
+    res = await state.get(testKey)
+    resTime = new Date(res.expiration).getTime()
+    expect(resTime).toBeGreaterThanOrEqual(nowPlus365Days)
 
     // 3. test that after ttl object is deleted
     expect(await state.put(testKey, testValue, { ttl: 2 })).toEqual(testKey)
     res = await state.get(testKey)
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
-    await waitFor(3000) // give it one more sec - azure ttl is not so precise
+    await waitFor(3000) // give it one more sec - ttl is not so precise
     expect(await state.get(testKey)).toEqual(undefined)
   })
 
   test('throw error when get/put with invalid keys', async () => {
-    const invalidChars = "The following characters are restricted and cannot be used in the Id property: '/', '\\', '?', '#' "
+    const invalidChars = 'invalid key or value [{\"instancePath\":\"/key\",\"schemaPath\":\"#/properties/key/pattern\",\"keyword\":\"pattern\",\"params\":{\"pattern\":\"^[a-zA-Z0-9-_-]{1,1024}$\"},\"message\":\"must match pattern \\\"^[a-zA-Z0-9-_-]{1,1024}$\\\"\"}]'
     const invalidKey = 'invalid/key'
     const state = await initStateEnv()
-    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow(new codes.ERROR_BAD_ARGUMENT({
       messageValues: [invalidChars]
     }))
-    await expect(state.get(invalidKey)).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+    await expect(state.get(invalidKey)).rejects.toThrow(new codes.ERROR_BAD_ARGUMENT({
       messageValues: [invalidChars]
     }))
   })
@@ -120,8 +116,8 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     const state1 = await initStateEnv(1)
     const state2 = await initStateEnv(2)
 
-    const testValue1 = { an: 'object' }
-    const testValue2 = { another: 'dummy' }
+    const testValue1 = 'one value'
+    const testValue2 = 'some other value'
 
     // 1. test that ns2 cannot get state in ns1
     await state1.put(testKey, testValue1)
@@ -148,7 +144,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
       await state.put(testKey, bigValue)
     } catch (e) {
       expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
-        name: 'StateLibError',
+        name: 'AdobeStateLibError',
         code: 'ERROR_PAYLOAD_TOO_LARGE'
       }))
     }

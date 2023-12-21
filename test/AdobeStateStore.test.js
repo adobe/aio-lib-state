@@ -67,7 +67,10 @@ const wrapInFetchError = (status) => {
 jest.mock('@adobe/aio-lib-core-networking')
 
 jest.mock('../lib/constants', () => {
-  return myConstants
+  return {
+    ...jest.requireActual('../lib/constants'),
+    ...myConstants
+  }
 })
 
 jest.mock('@adobe/aio-lib-env', () => {
@@ -143,6 +146,13 @@ describe('get', () => {
     expect(value).toEqual(fetchResponseJson)
   })
 
+  test('invalid key', async () => {
+    const key = 'bad/key'
+
+    // TODO: to improve
+    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/key","schemaPath":"#/properties/key/pattern","keyword":"pattern","params":{"pattern":"^[a-zA-Z0-9-_-]{1,1024}$"},"message":"must match pattern \\"^[a-zA-Z0-9-_-]{1,1024}$\\""}]')
+  })
+
   test('not found', async () => {
     const key = 'not-found-key'
 
@@ -182,15 +192,20 @@ describe('put', () => {
     expect(returnKey).toEqual(key)
   })
 
-  test('success (binary value)', async () => {
+  test('failure (invalid key)', async () => {
+    const key = 'invalid/key'
+    const value = 'some-value'
+
+    // TODO: to improve
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/key","schemaPath":"#/properties/key/pattern","keyword":"pattern","params":{"pattern":"^[a-zA-Z0-9-_-]{1,1024}$"},"message":"must match pattern \\"^[a-zA-Z0-9-_-]{1,1024}$\\""}]')
+  })
+
+  test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
-    const fetchResponseJson = {}
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
-
-    const returnKey = await store.put(key, value)
-    expect(returnKey).toEqual(key)
+    // TODO: to improve
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/value","schemaPath":"#/properties/value/type","keyword":"type","params":{"type":"string"},"message":"must be string"}]')
   })
 
   test('coverage: 401 error', async () => {
@@ -207,6 +222,14 @@ describe('put', () => {
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(403))
     await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access underlying DB provider, make sure your credentials are valid')
+  })
+
+  test('coverage: 413 error', async () => {
+    const key = 'some-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(413))
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large underlying DB provider')
   })
 
   test('coverage: 429 error', async () => {
