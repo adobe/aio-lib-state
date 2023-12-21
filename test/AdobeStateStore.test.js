@@ -149,8 +149,7 @@ describe('get', () => {
   test('invalid key', async () => {
     const key = 'bad/key'
 
-    // TODO: to improve
-    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/key","schemaPath":"#/properties/key/pattern","keyword":"pattern","params":{"pattern":"^[a-zA-Z0-9-_-]{1,1024}$"},"message":"must match pattern \\"^[a-zA-Z0-9-_-]{1,1024}$\\""}]')
+    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
   })
 
   test('not found', async () => {
@@ -196,16 +195,14 @@ describe('put', () => {
     const key = 'invalid/key'
     const value = 'some-value'
 
-    // TODO: to improve
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/key","schemaPath":"#/properties/key/pattern","keyword":"pattern","params":{"pattern":"^[a-zA-Z0-9-_-]{1,1024}$"},"message":"must match pattern \\"^[a-zA-Z0-9-_-]{1,1024}$\\""}]')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
   })
 
   test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
 
-    // TODO: to improve
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key or value [{"instancePath":"/value","schemaPath":"#/properties/value/type","keyword":"type","params":{"type":"string"},"message":"must be string"}]')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
   })
 
   test('coverage: 401 error', async () => {

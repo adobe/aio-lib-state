@@ -101,15 +101,10 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   })
 
   test('throw error when get/put with invalid keys', async () => {
-    const invalidChars = 'invalid key or value [{\"instancePath\":\"/key\",\"schemaPath\":\"#/properties/key/pattern\",\"keyword\":\"pattern\",\"params\":{\"pattern\":\"^[a-zA-Z0-9-_-]{1,1024}$\"},\"message\":\"must match pattern \\\"^[a-zA-Z0-9-_-]{1,1024}$\\\"\"}]'
-    const invalidKey = 'invalid/key'
+    const invalidKey = 'some/invalid/key'
     const state = await initStateEnv()
-    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow(new codes.ERROR_BAD_ARGUMENT({
-      messageValues: [invalidChars]
-    }))
-    await expect(state.get(invalidKey)).rejects.toThrow(new codes.ERROR_BAD_ARGUMENT({
-      messageValues: [invalidChars]
-    }))
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
+    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {
