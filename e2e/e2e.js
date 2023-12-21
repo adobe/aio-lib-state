@@ -14,7 +14,10 @@ governing permissions and limitations under the License.
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
 const stateLib = require('../index')
-const { codes } = require('../lib/StateStoreError')
+const path = require('node:path')
+const { codes } = require('../lib/AdobeStateStoreError')
+// load .env values in the e2e folder, if any
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const testKey = 'e2e_test_state_key'
 
@@ -29,8 +32,7 @@ const initStateEnv = async (n = 1) => {
   delete process.env.__OW_NAMESPACE
   process.env.__OW_API_KEY = process.env[`TEST_AUTH_${n}`]
   process.env.__OW_NAMESPACE = process.env[`TEST_NAMESPACE_${n}`]
-  // 1. init will fetch credentials from the tvm using ow creds
-  const state = await stateLib.init() // { tvm: { cacheFile: false } } // keep cache for better perf?
+  const state = await stateLib.init()
   // make sure we delete the testKey, note that delete might fail as it is an op under test
   await state.delete(testKey)
   return state
@@ -49,7 +51,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
       await stateLib.init()
     } catch (e) {
       expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
-        name: 'StateLibError',
+        name: 'AdobeStateLibError',
         code: 'ERROR_BAD_CREDENTIALS'
       }))
     }
