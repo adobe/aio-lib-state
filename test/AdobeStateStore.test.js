@@ -104,7 +104,7 @@ describe('init and constructor', () => {
 
   test('bad credentials (no apikey and no namespace)', async () => {
     await expect(AdobeStateStore.init()).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] "apikey" is required')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 
   test('bad credentials (no apikey)', async () => {
@@ -113,7 +113,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeStateStore.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] "apikey" is required')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 
   test('bad credentials (no namespace)', async () => {
@@ -122,7 +122,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeStateStore.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] "namespace" is required')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 })
 
