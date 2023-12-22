@@ -15,7 +15,6 @@ governing permissions and limitations under the License.
 
 const stateLib = require('../index')
 const path = require('node:path')
-const { codes } = require('../lib/AdobeStateStoreError')
 const { MAX_TTL_SECONDS } = require('../lib/constants')
 
 // load .env values in the e2e folder, if any
@@ -24,10 +23,6 @@ require('dotenv').config({ path: path.join(__dirname, '.env') })
 const testKey = 'e2e_test_state_key'
 
 jest.setTimeout(30000) // thirty seconds per test
-
-beforeEach(() => {
-  expect.hasAssertions()
-})
 
 const initStateEnv = async (n = 1) => {
   delete process.env.__OW_API_KEY
@@ -48,19 +43,25 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     delete process.env.__OW_NAMESPACE
     process.env.__OW_API_KEY = process.env.TEST_AUTH_1
     process.env.__OW_NAMESPACE = process.env.TEST_NAMESPACE_1 + 'bad'
+    let expectedError
 
     try {
       const store = await stateLib.init()
       await store.get('something')
     } catch (e) {
-      expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
+      expectedError = e
+    }
+
+    expect(expectedError).toBeDefined()
+    expect(expectedError instanceof Error).toBeTruthy()
+    expect({ name: expectedError.name, code: expectedError.code, message: expectedError.message, sdkDetails: expectedError.sdkDetails })
+      .toEqual(expect.objectContaining({
         name: 'AdobeStateLibError',
         code: 'ERROR_BAD_CREDENTIALS'
       }))
-    }
   })
 
-  test('key-value basic test on one key with string value: get, write, get, delete, get', async () => {
+  test('key-value basic test on one key with string value: put, get, delete, any, deleteAll', async () => {
     const state = await initStateEnv()
 
     const testValue = 'a string'
@@ -68,8 +69,14 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
-    expect(await state.delete(testKey, testValue)).toEqual(testKey)
+    expect(await state.delete(testKey)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
+    expect(await state.any()).toEqual(false)
+    expect(await state.put(testKey, testValue)).toEqual(testKey)
+    expect(await state.any()).toEqual(true)
+    expect(await state.deleteAll()).toEqual(true)
+    expect(await state.get(testKey)).toEqual(undefined)
+    expect(await state.any()).toEqual(false)
   })
 
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {
@@ -132,16 +139,21 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
   test('error value bigger than 2MB test', async () => {
     const state = await initStateEnv()
-
     const bigValue = ('a').repeat(1024 * 1024 * 2 + 1)
+    let expectedError
 
     try {
       await state.put(testKey, bigValue)
     } catch (e) {
-      expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
+      expectedError = e
+    }
+
+    expect(expectedError).toBeDefined()
+    expect(expectedError instanceof Error).toBeTruthy()
+    expect({ name: expectedError.name, code: expectedError.code, message: expectedError.message, sdkDetails: expectedError.sdkDetails })
+      .toEqual(expect.objectContaining({
         name: 'AdobeStateLibError',
         code: 'ERROR_PAYLOAD_TOO_LARGE'
       }))
-    }
   })
 })
