@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Adobe. All rights reserved.
+Copyright 2024 Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License. You may obtain a copy
 of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -13,7 +13,7 @@ governing permissions and limitations under the License.
 // @ts-nocheck
 const { getCliEnv, DEFAULT_ENV, PROD_ENV, STAGE_ENV } = require('@adobe/aio-lib-env')
 const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
-const { AdobeStateStore } = require('../lib/AdobeStateStore')
+const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
 
@@ -96,14 +96,14 @@ describe('init and constructor', () => {
       namespace: 'some-namespace'
     }
 
-    const store = await AdobeStateStore.init(credentials)
+    const store = await AdobeState.init(credentials)
     expect(store.apikey).toEqual(credentials.apikey)
     expect(store.namespace).toEqual(credentials.namespace)
     expect(store.endpoint).toBeDefined()
   })
 
   test('bad credentials (no apikey and no namespace)', async () => {
-    await expect(AdobeStateStore.init()).rejects
+    await expect(AdobeState.init()).rejects
       .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 
@@ -112,7 +112,7 @@ describe('init and constructor', () => {
       namespace: 'some-namespace'
     }
 
-    await expect(AdobeStateStore.init(credentials)).rejects
+    await expect(AdobeState.init(credentials)).rejects
       .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 
@@ -121,7 +121,7 @@ describe('init and constructor', () => {
       apikey: 'some-apikey'
     }
 
-    await expect(AdobeStateStore.init(credentials)).rejects
+    await expect(AdobeState.init(credentials)).rejects
       .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
   })
 })
@@ -130,7 +130,7 @@ describe('get', () => {
   let store
 
   beforeEach(async () => {
-    store = await AdobeStateStore.init(fakeCredentials)
+    store = await AdobeState.init(fakeCredentials)
   })
 
   test('success', async () => {
@@ -166,7 +166,7 @@ describe('put', () => {
   let store
 
   beforeEach(async () => {
-    store = await AdobeStateStore.init(fakeCredentials)
+    store = await AdobeState.init(fakeCredentials)
   })
 
   test('success (string value) no ttl', async () => {
@@ -260,7 +260,7 @@ describe('delete', () => {
   let store
 
   beforeEach(async () => {
-    store = await AdobeStateStore.init(fakeCredentials)
+    store = await AdobeState.init(fakeCredentials)
   })
 
   test('success', async () => {
@@ -287,7 +287,7 @@ describe('deleteAll', () => {
   let store
 
   beforeEach(async () => {
-    store = await AdobeStateStore.init(fakeCredentials)
+    store = await AdobeState.init(fakeCredentials)
   })
 
   test('success', async () => {
@@ -310,7 +310,7 @@ describe('any', () => {
   let store
 
   beforeEach(async () => {
-    store = await AdobeStateStore.init(fakeCredentials)
+    store = await AdobeState.init(fakeCredentials)
   })
 
   test('success', async () => {
@@ -334,7 +334,7 @@ describe('private methods', () => {
     const expectedHeaders = {
       Authorization: `Basic ${fakeCredentials.apikey}`
     }
-    const store = await AdobeStateStore.init(fakeCredentials)
+    const store = await AdobeState.init(fakeCredentials)
 
     expect(store.getAuthorizationHeaders()).toEqual(expectedHeaders)
   })
@@ -345,7 +345,7 @@ describe('private methods', () => {
       getCliEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
-      const store = await AdobeStateStore.init(fakeCredentials)
+      const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
       expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}`)
@@ -357,7 +357,7 @@ describe('private methods', () => {
       getCliEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
-      const store = await AdobeStateStore.init(fakeCredentials)
+      const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
       expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}`)
@@ -373,7 +373,7 @@ describe('private methods', () => {
       getCliEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
-      const store = await AdobeStateStore.init(fakeCredentials)
+      const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
       expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
