@@ -13,12 +13,13 @@ governing permissions and limitations under the License.
 /* ************* NOTE 1: these tests must be run sequentially, jest does it by default within a SINGLE file ************* */
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
-const stateLib = require('../index')
 const path = require('node:path')
-const { MAX_TTL_SECONDS } = require('../lib/constants')
 
 // load .env values in the e2e folder, if any
 require('dotenv').config({ path: path.join(__dirname, '.env') })
+
+const { MAX_TTL_SECONDS } = require('../lib/constants')
+const stateLib = require('../index')
 
 const testKey = 'e2e_test_state_key'
 
