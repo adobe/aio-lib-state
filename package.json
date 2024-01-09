@@ -34,9 +34,9 @@
     "key-value"
   ],
   "devDependencies": {
+    "@types/hapi__joi": "^17.1.9",
     "@types/jest": "^29.5.0",
     "codecov": "^3.6.1",
-    "dotenv": "^16.3.1",
     "eslint": "^8",
     "eslint-config-standard": "^17",
     "eslint-plugin-import": "^2",
@@ -53,9 +53,9 @@
   "dependencies": {
     "@adobe/aio-lib-core-errors": "^3.1.0",
     "@adobe/aio-lib-core-logging": "^2.0.0",
-    "@adobe/aio-lib-core-networking": "^4.1.0",
-    "@adobe/aio-lib-env": "^2.0.0",
-    "ajv": "^8.12.0",
+    "@adobe/aio-lib-core-tvm": "^3.0.0",
+    "@azure/cosmos": "^3.17.1",
+    "joi": "^17.4.2",
     "lodash.clonedeep": "^4.5.0"
   }
 }

@@ -13,24 +13,24 @@ governing permissions and limitations under the License.
 /* ************* NOTE 1: these tests must be run sequentially, jest does it by default within a SINGLE file ************* */
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
-const path = require('node:path')
-
-// load .env values in the e2e folder, if any
-require('dotenv').config({ path: path.join(__dirname, '.env') })
-
-const { MAX_TTL_SECONDS } = require('../lib/constants')
 const stateLib = require('../index')
+const { codes } = require('../lib/StateStoreError')
 
 const testKey = 'e2e_test_state_key'
 
 jest.setTimeout(30000) // thirty seconds per test
+
+beforeEach(() => {
+  expect.hasAssertions()
+})
 
 const initStateEnv = async (n = 1) => {
   delete process.env.__OW_API_KEY
   delete process.env.__OW_NAMESPACE
   process.env.__OW_API_KEY = process.env[`TEST_AUTH_${n}`]
   process.env.__OW_NAMESPACE = process.env[`TEST_NAMESPACE_${n}`]
-  const state = await stateLib.init()
+  // 1. init will fetch credentials from the tvm using ow creds
+  const state = await stateLib.init() // { tvm: { cacheFile: false } } // keep cache for better perf?
   // make sure we delete the testKey, note that delete might fail as it is an op under test
   await state.delete(testKey)
   return state
@@ -44,25 +44,18 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     delete process.env.__OW_NAMESPACE
     process.env.__OW_API_KEY = process.env.TEST_AUTH_1
     process.env.__OW_NAMESPACE = process.env.TEST_NAMESPACE_1 + 'bad'
-    let expectedError
 
     try {
-      const store = await stateLib.init()
-      await store.get('something')
+      await stateLib.init()
     } catch (e) {
-      expectedError = e
-    }
-
-    expect(expectedError).toBeDefined()
-    expect(expectedError instanceof Error).toBeTruthy()
-    expect({ name: expectedError.name, code: expectedError.code, message: expectedError.message, sdkDetails: expectedError.sdkDetails })
-      .toEqual(expect.objectContaining({
-        name: 'AdobeStateLibError',
+      expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
+        name: 'StateLibError',
         code: 'ERROR_BAD_CREDENTIALS'
       }))
+    }
   })
 
-  test('key-value basic test on one key with string value: put, get, delete, any, deleteAll', async () => {
+  test('key-value basic test on one key with string value: get, write, get, delete, get', async () => {
     const state = await initStateEnv()
 
     const testValue = 'a string'
@@ -70,57 +63,63 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
-    expect(await state.delete(testKey)).toEqual(testKey)
+    expect(await state.delete(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
-    expect(await state.any()).toEqual(false)
+  })
+
+  test('key-value basic test on one key with object value: get, write, get, delete, get', async () => {
+    const state = await initStateEnv()
+
+    const testValue = { a: 'fake', object: { with: { multiple: 'layers' }, that: { dreams: { of: { being: 'real' } } } } }
+
+    expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
-    expect(await state.any()).toEqual(true)
-    expect(await state.deleteAll()).toEqual(true)
+    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
+    expect(await state.delete(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
-    expect(await state.any()).toEqual(false)
   })
 
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {
     const state = await initStateEnv()
 
-    const testValue = 'test value'
-    let res, resTime
+    const testValue = { an: 'object' }
 
     // 1. test default ttl = 1 day
     expect(await state.put(testKey, testValue)).toEqual(testKey)
-    res = await state.get(testKey)
-    resTime = new Date(res.expiration).getTime()
-    expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
-    expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
+    let res = await state.get(testKey)
+    expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
+    expect(new Date(res.expiration).getTime()).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
-    // 2. test max ttl
-    const nowPlus365Days = new Date(MAX_TTL_SECONDS).getTime()
+    // 2. test infinite ttl
     expect(await state.put(testKey, testValue, { ttl: -1 })).toEqual(testKey)
-    res = await state.get(testKey)
-    resTime = new Date(res.expiration).getTime()
-    expect(resTime).toBeGreaterThanOrEqual(nowPlus365Days)
+    expect(await state.get(testKey)).toEqual(expect.objectContaining({ expiration: null }))
 
     // 3. test that after ttl object is deleted
     expect(await state.put(testKey, testValue, { ttl: 2 })).toEqual(testKey)
     res = await state.get(testKey)
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
-    await waitFor(3000) // give it one more sec - ttl is not so precise
+    await waitFor(3000) // give it one more sec - azure ttl is not so precise
     expect(await state.get(testKey)).toEqual(undefined)
   })
 
   test('throw error when get/put with invalid keys', async () => {
-    const invalidKey = 'some/invalid/key'
+    const invalidChars = "The following characters are restricted and cannot be used in the Id property: '/', '\\', '?', '#' "
+    const invalidKey = 'invalid/key'
     const state = await initStateEnv()
-    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
-    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+      messageValues: [invalidChars]
+    }))
+    await expect(state.get(invalidKey)).rejects.toThrow(new codes.ERROR_BAD_REQUEST({
+      messageValues: [invalidChars]
+    }))
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {
     const state1 = await initStateEnv(1)
     const state2 = await initStateEnv(2)
 
-    const testValue1 = 'one value'
-    const testValue2 = 'some other value'
+    const testValue1 = { an: 'object' }
+    const testValue2 = { another: 'dummy' }
 
     // 1. test that ns2 cannot get state in ns1
     await state1.put(testKey, testValue1)
@@ -140,21 +139,16 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
   test('error value bigger than 2MB test', async () => {
     const state = await initStateEnv()
+
     const bigValue = ('a').repeat(1024 * 1024 * 2 + 1)
-    let expectedError
 
     try {
       await state.put(testKey, bigValue)
     } catch (e) {
-      expectedError = e
-    }
-
-    expect(expectedError).toBeDefined()
-    expect(expectedError instanceof Error).toBeTruthy()
-    expect({ name: expectedError.name, code: expectedError.code, message: expectedError.message, sdkDetails: expectedError.sdkDetails })
-      .toEqual(expect.objectContaining({
-        name: 'AdobeStateLibError',
+      expect({ name: e.name, code: e.code, message: e.message, sdkDetails: e.sdkDetails }).toEqual(expect.objectContaining({
+        name: 'StateLibError',
         code: 'ERROR_PAYLOAD_TOO_LARGE'
       }))
+    }
   })
 })
