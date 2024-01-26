@@ -1,6 +1,6 @@
 {
   "name": "@adobe/aio-lib-state",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "description": "An Abstraction on top of Key Value Stores",
   "main": "index.js",
   "directories": {
@@ -51,10 +51,10 @@
     "tsd-jsdoc": "^2.4.0"
   },
   "dependencies": {
-    "@adobe/aio-lib-core-errors": "^3.1.0",
-    "@adobe/aio-lib-core-logging": "^2.0.0",
+    "@adobe/aio-lib-core-errors": "^4",
+    "@adobe/aio-lib-core-logging": "^3",
     "@adobe/aio-lib-core-networking": "^4.1.0",
-    "@adobe/aio-lib-env": "^2.0.0",
+    "@adobe/aio-lib-env": "^3",
     "ajv": "^8.12.0",
     "lodash.clonedeep": "^4.5.0"
   }
