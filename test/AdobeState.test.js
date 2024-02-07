@@ -16,6 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
+const { API_VERSION } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -33,8 +34,8 @@ const fakeCredentials = {
 
 const myConstants = {
   ADOBE_STATE_STORE_ENDPOINT: {
-    prod: 'https://prod',
-    stage: 'https://stage'
+    prod: 'prod-server',
+    stage: 'stage-server'
   }
 }
 
@@ -348,7 +349,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('key set, no query params', async () => {
@@ -360,7 +361,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -376,7 +377,19 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+    })
+
+    test('no params, region set', async () => {
+      const region = 'va6'
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init({ ...fakeCredentials, region })
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`https://${region}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
   })
 })
