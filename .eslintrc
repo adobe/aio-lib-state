@@ -3,5 +3,10 @@
     "NodeJS": true
   },
   "plugins": ["jest"],
-  "extends": ["standard", "plugin:jsdoc/recommended", "plugin:jest/recommended"]
+  "extends": ["standard", "plugin:jsdoc/recommended", "plugin:jest/recommended"],
+  "settings": {
+    "jsdoc": {
+        "ignorePrivate": true
+    }
+  }
 }
