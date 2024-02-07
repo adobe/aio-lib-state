@@ -16,7 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
-const { API_VERSION } = require('../lib/constants')
+const { API_VERSION, ADOBE_STATE_STORE_REGIONS } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -331,6 +331,8 @@ describe('any', () => {
 })
 
 describe('private methods', () => {
+  const DEFAULT_REGION = ADOBE_STATE_STORE_REGIONS.at(0)
+
   test('getAuthorizationHeaders (private)', async () => {
     const expectedHeaders = {
       Authorization: `Basic ${fakeCredentials.apikey}`
@@ -349,7 +351,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('key set, no query params', async () => {
@@ -361,7 +363,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -377,11 +379,11 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`https://${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
     })
 
     test('no params, region set', async () => {
-      const region = 'va6'
+      const region = 'apac'
       const env = PROD_ENV
       getCliEnv.mockReturnValue(env)
 
