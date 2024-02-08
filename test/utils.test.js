@@ -9,7 +9,7 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-const { withHiddenFields, isInternalToAdobeRuntime } = require('../lib/utils')
+const { withHiddenFields, isInternalToAdobeRuntime, formatAjvErrors } = require('../lib/utils')
 
 describe('withHiddenFields', () => {
   test('no params', () => {
@@ -96,5 +96,79 @@ describe('isInternalToAdobeRuntime', () => {
       expect(constants.ADOBE_STATE_STORE_ENDPOINT.prod).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_PROD)
       expect(constants.ADOBE_STATE_STORE_ENDPOINT.stage).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_STAGE)
     })
+  })
+})
+
+describe('formatAjvErrors', () => {
+  test('unknown keyword', () => {
+    const errors = [
+      {
+        instancePath: '/value',
+        schemaPath: '#/properties/value/type',
+        keyword: 'some-keyword',
+        params: { type: 'string' },
+        message: 'must be something'
+      }
+    ]
+    const firstError = formatAjvErrors(errors)[0]
+    expect(firstError).toMatch('WARNING: keyword \'some-keyword\' was not handled for formatting:')
+  })
+
+  test('required keyword', () => {
+    const errors = [
+      {
+        instancePath: '\\',
+        schemaPath: '#/required',
+        keyword: 'required',
+        params: {
+          missingProperty: 'apikey'
+        },
+        message: 'must have required property \'apikey\''
+      },
+      {
+        instancePath: '\\',
+        schemaPath: '#/required',
+        keyword: 'required',
+        params: {
+          missingProperty: 'namespace'
+        },
+        message: 'must have required property \'namespace\''
+      }
+    ]
+    const firstError = formatAjvErrors(errors)[0]
+    expect(firstError).toMatch('must have required properties: apikey, namespace')
+  })
+
+  test('enum keyword', () => {
+    const errors = [
+      {
+        instancePath: '/region',
+        schemaPath: '#/properties/region/enum',
+        keyword: 'enum',
+        params: {
+          allowedValues: [
+            'amer',
+            'apac',
+            'emea'
+          ]
+        },
+        message: 'must be equal to one of the allowed values'
+      }
+    ]
+    expect(formatAjvErrors(errors)[0]).toMatch('/region must be equal to one of the allowed values: amer, apac, emea')
+  })
+
+  test('type keyword', () => {
+    const errors = [
+      {
+        instancePath: '/value',
+        schemaPath: '#/properties/value/type',
+        keyword: 'type',
+        params: { type: 'string' },
+        message: 'must be string'
+      }
+    ]
+    const firstError = formatAjvErrors(errors)[0]
+    expect(firstError).toMatch('/value must be string')
   })
 })
