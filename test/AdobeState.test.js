@@ -105,7 +105,7 @@ describe('init and constructor', () => {
 
   test('bad credentials (no apikey and no namespace)', async () => {
     await expect(AdobeState.init()).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: apikey, namespace')
   })
 
   test('bad credentials (no apikey)', async () => {
@@ -114,7 +114,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeState.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: apikey')
   })
 
   test('bad credentials (no namespace)', async () => {
@@ -123,7 +123,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeState.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: namespace')
   })
 })
 
@@ -150,7 +150,7 @@ describe('get', () => {
   test('invalid key', async () => {
     const key = 'bad/key'
 
-    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
+    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
   })
 
   test('not found', async () => {
@@ -196,14 +196,14 @@ describe('put', () => {
     const key = 'invalid/key'
     const value = 'some-value'
 
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
   })
 
   test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
 
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /value must be string')
   })
 
   test('coverage: 401 error', async () => {
@@ -392,6 +392,15 @@ describe('private methods', () => {
 
       const url = store.createRequestUrl()
       expect(url).toEqual(`https://${region}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, region invalid', async () => {
+      const region = 'some-invalid-region'
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
+        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, apac, emea')
     })
   })
 })
