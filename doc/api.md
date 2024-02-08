@@ -167,7 +167,7 @@ AdobeState put options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A value of 0 sets default. |
+| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A value of 0 sets default. |
 
 <a name="AdobeStateGetReturnValue"></a>
 
@@ -179,7 +179,7 @@ AdobeState get return object
 
 | Name | Type | Description |
 | --- | --- | --- |
-| expiration | <code>string</code> \| <code>null</code> | ISO date string of expiration time for the key-value pair, if the ttl is infinite expiration=null |
+| expiration | <code>number</code> \| <code>null</code> | time in milliseconds since epoch, for the key-value pair expiration=null |
 | value | <code>any</code> | the value set by put |
 
 <a name="OpenWhiskCredentials"></a>

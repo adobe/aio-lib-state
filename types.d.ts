@@ -12,7 +12,7 @@ export type AdobeStateCredentials = {
 
 /**
  * AdobeState put options
- * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A
+ * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A
  * value of 0 sets default.
  */
 export type AdobeStatePutOptions = {
@@ -21,12 +21,12 @@ export type AdobeStatePutOptions = {
 
 /**
  * AdobeState get return object
- * @property expiration - ISO date string of expiration time for the key-value pair, if the ttl is infinite
+ * @property expiration - time in milliseconds since epoch, for the key-value pair
  * expiration=null
  * @property value - the value set by put
  */
 export type AdobeStateGetReturnValue = {
-    expiration: string | null;
+    expiration: number | null;
     value: any;
 };
 

@@ -16,7 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
-const { API_VERSION, ADOBE_STATE_STORE_REGIONS } = require('../lib/constants')
+const { API_VERSION, ADOBE_STATE_STORE_REGIONS, HEADER_KEY_EXPIRES } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -41,13 +41,16 @@ const myConstants = {
 
 // helpers //////////////////////////////////////////////////////////
 
-const wrapInFetchResponse = (body) => {
+const wrapInFetchResponse = (body, options = {}) => {
+  const emptyFunc = () => {}
+  const { headersGet = emptyFunc } = options
+
   return {
     ok: true,
     headers: {
-      get: () => 'fake req id'
+      get: headersGet
     },
-    json: async () => body
+    text: async () => body
   }
 }
 
@@ -136,15 +139,22 @@ describe('get', () => {
 
   test('success', async () => {
     const key = 'valid-key'
-    const fetchResponseJson = {
-      expiration: 999,
-      value: 'foo'
+    const fetchBody = 'foo'
+    const expiryHeaderValue = 999
+
+    const options = {
+      headersGet: (header) => {
+        if (header === HEADER_KEY_EXPIRES) {
+          return expiryHeaderValue
+        }
+      }
     }
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchBody, options))
 
-    const value = await store.get(key)
-    expect(value).toEqual(fetchResponseJson)
+    const { value, expiration } = await store.get(key)
+    expect(value).toEqual(fetchBody)
+    expect(expiration).toEqual(expiryHeaderValue)
   })
 
   test('invalid key', async () => {
@@ -352,6 +362,30 @@ describe('private methods', () => {
 
       const url = store.createRequestUrl()
       expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, localhost endpoint', async () => {
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init(fakeCredentials)
+      store.endpoint = 'localhost'
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, 127.0.0.1 endpoint', async () => {
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init(fakeCredentials)
+      store.endpoint = '127.0.0.1'
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('key set, no query params', async () => {

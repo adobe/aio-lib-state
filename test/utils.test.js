@@ -135,8 +135,9 @@ describe('formatAjvErrors', () => {
         message: 'must have required property \'namespace\''
       }
     ]
-    const firstError = formatAjvErrors(errors)[0]
-    expect(firstError).toMatch('must have required properties: apikey, namespace')
+    const allErrors = formatAjvErrors(errors)
+    expect(allErrors.length).toEqual(1)
+    expect(allErrors[0]).toMatch('must have required properties: apikey, namespace')
   })
 
   test('enum keyword', () => {
