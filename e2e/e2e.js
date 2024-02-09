@@ -69,7 +69,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
-    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue, expiration: expect.any(Number) }))
+    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue, expiration: expect.any(String) }))
     expect(await state.delete(testKey)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.any()).toEqual(false)

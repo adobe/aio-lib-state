@@ -179,8 +179,8 @@ AdobeState get return object
 
 | Name | Type | Description |
 | --- | --- | --- |
-| expiration | <code>number</code> \| <code>null</code> | time in milliseconds since epoch, for the key-value pair expiration=null |
-| value | <code>any</code> | the value set by put |
+| expiration | <code>string</code> | the ISO-8601 date string of the expiration time for the key-value pair |
+| value | <code>string</code> | the value set by put |
 
 <a name="OpenWhiskCredentials"></a>
 

@@ -140,7 +140,7 @@ describe('get', () => {
   test('success', async () => {
     const key = 'valid-key'
     const fetchBody = 'foo'
-    const expiryHeaderValue = '999'
+    const expiryHeaderValue = '1707445350000'
 
     const options = {
       headersGet: (header) => {
@@ -154,8 +154,8 @@ describe('get', () => {
 
     const { value, expiration } = await store.get(key)
     expect(value).toEqual(fetchBody)
-    expect(typeof expiration).toEqual('number')
-    expect(expiration).toEqual(Number(expiryHeaderValue))
+    expect(typeof expiration).toEqual('string')
+    expect(expiration).toEqual(new Date(Number(expiryHeaderValue)).toISOString())
   })
 
   test('invalid key', async () => {

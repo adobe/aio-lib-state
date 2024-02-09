@@ -21,13 +21,12 @@ export type AdobeStatePutOptions = {
 
 /**
  * AdobeState get return object
- * @property expiration - time in milliseconds since epoch, for the key-value pair
- * expiration=null
+ * @property expiration - the ISO-8601 date string of the expiration time for the key-value pair
  * @property value - the value set by put
  */
 export type AdobeStateGetReturnValue = {
-    expiration: number | null;
-    value: any;
+    expiration: string;
+    value: string;
 };
 
 /**
