@@ -69,7 +69,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
-    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue }))
+    expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue, expiration: expect.any(String) }))
     expect(await state.delete(testKey)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.any()).toEqual(false)
@@ -93,14 +93,21 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
     expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
-    // 2. test max ttl
+    // 2. test ttl = 0 (should default to default ttl of 1 day)
+    expect(await state.put(testKey, testValue, { ttl: 0 })).toEqual(testKey)
+    res = await state.get(testKey)
+    resTime = new Date(res.expiration).getTime()
+    expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
+    expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
+
+    // 3. test max ttl
     const nowPlus365Days = new Date(MAX_TTL_SECONDS).getTime()
     expect(await state.put(testKey, testValue, { ttl: -1 })).toEqual(testKey)
     res = await state.get(testKey)
     resTime = new Date(res.expiration).getTime()
     expect(resTime).toBeGreaterThanOrEqual(nowPlus365Days)
 
-    // 3. test that after ttl object is deleted
+    // 4. test that after ttl object is deleted
     expect(await state.put(testKey, testValue, { ttl: 2 })).toEqual(testKey)
     res = await state.get(testKey)
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
@@ -111,8 +118,8 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   test('throw error when get/put with invalid keys', async () => {
     const invalidKey = 'some/invalid/key'
     const state = await initStateEnv()
-    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
-    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
+    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {

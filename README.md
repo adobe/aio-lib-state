@@ -35,8 +35,10 @@ npm install @adobe/aio-lib-state
 ```js
   const stateLib = require('@adobe/aio-lib-state')
 
-  // init when running in an Adobe I/O Runtime action (OpenWhisk) (uses env vars __OW_API_KEY and __OW_NAMESPACE automatically)
+  // init when running in an Adobe I/O Runtime action (OpenWhisk) (uses env vars __OW_API_KEY and __OW_NAMESPACE automatically. default region is 'amer')
   const state = await stateLib.init()
+  // set an explicit region
+  const state2 = await stateLib.init({ region: 'apac' }) 
 
   // get
   const res = await state.get('key') // res = { value, expiration }

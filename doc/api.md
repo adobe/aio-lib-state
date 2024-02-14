@@ -79,11 +79,11 @@ Creates or updates a state key-value pair
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - key  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| key | <code>string</code> |  | state key identifier |
-| value | <code>string</code> |  | state value |
-| [options] | [<code>AdobeStatePutOptions</code>](#AdobeStatePutOptions) | <code>{}</code> | put options |
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>string</code> | state key identifier |
+| value | <code>string</code> | state value |
+| [options] | [<code>AdobeStatePutOptions</code>](#AdobeStatePutOptions) | put options |
 
 <a name="AdobeState+delete"></a>
 
@@ -138,10 +138,10 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 **Kind**: global function  
 **Returns**: [<code>Promise.&lt;AdobeState&gt;</code>](#AdobeState) - An AdobeState instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [config] | <code>object</code> | <code>{}</code> | used to init the sdk |
-| [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) |  | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
+| Param | Type | Description |
+| --- | --- | --- |
+| [config] | <code>object</code> | used to init the sdk |
+| [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
 
 <a name="AdobeStateCredentials"></a>
 
@@ -155,6 +155,7 @@ AdobeStateCredentials
 | --- | --- | --- |
 | namespace | <code>string</code> | the state store namespace |
 | apikey | <code>string</code> | the state store api key |
+| region | <code>&#x27;amer&#x27;</code> \| <code>&#x27;apac&#x27;</code> \| <code>&#x27;emea&#x27;</code> | the region for the Adobe State Store. defaults to 'amer' |
 
 <a name="AdobeStatePutOptions"></a>
 
@@ -166,7 +167,7 @@ AdobeState put options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A value of 0 sets default. |
+| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A value of 0 sets default. |
 
 <a name="AdobeStateGetReturnValue"></a>
 
@@ -178,8 +179,8 @@ AdobeState get return object
 
 | Name | Type | Description |
 | --- | --- | --- |
-| expiration | <code>string</code> \| <code>null</code> | ISO date string of expiration time for the key-value pair, if the ttl is infinite expiration=null |
-| value | <code>any</code> | the value set by put |
+| expiration | <code>string</code> | the ISO-8601 date string of the expiration time for the key-value pair |
+| value | <code>string</code> | the value set by put |
 
 <a name="OpenWhiskCredentials"></a>
 
