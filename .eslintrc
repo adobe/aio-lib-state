@@ -3,5 +3,20 @@
     "NodeJS": true
   },
   "plugins": ["jest"],
-  "extends": ["standard", "plugin:jsdoc/recommended", "plugin:jest/recommended"]
+  "extends": ["standard", "plugin:jsdoc/recommended", "plugin:jest/recommended"],
+  "settings": {
+    "jsdoc": {
+        "ignorePrivate": true
+    }
+  },
+  "rules": {
+    "jsdoc/tag-lines": [
+        // The Error level should be `error`, `warn`, or `off` (or 2, 1, or 0)
+        "error",
+        "never",
+        {
+          "startLines": null
+        }
+    ]
+  }
 }

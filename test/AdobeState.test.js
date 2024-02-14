@@ -16,6 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
+const { API_VERSION, ADOBE_STATE_STORE_REGIONS, HEADER_KEY_EXPIRES } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -33,20 +34,23 @@ const fakeCredentials = {
 
 const myConstants = {
   ADOBE_STATE_STORE_ENDPOINT: {
-    prod: 'https://prod',
-    stage: 'https://stage'
+    prod: 'prod-server',
+    stage: 'stage-server'
   }
 }
 
 // helpers //////////////////////////////////////////////////////////
 
-const wrapInFetchResponse = (body) => {
+const wrapInFetchResponse = (body, options = {}) => {
+  const emptyFunc = () => {}
+  const { headersGet = emptyFunc } = options
+
   return {
     ok: true,
     headers: {
-      get: () => 'fake req id'
+      get: headersGet
     },
-    json: async () => body
+    text: async () => body
   }
 }
 
@@ -104,7 +108,7 @@ describe('init and constructor', () => {
 
   test('bad credentials (no apikey and no namespace)', async () => {
     await expect(AdobeState.init()).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: apikey, namespace')
   })
 
   test('bad credentials (no apikey)', async () => {
@@ -113,7 +117,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeState.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: apikey')
   })
 
   test('bad credentials (no namespace)', async () => {
@@ -122,7 +126,7 @@ describe('init and constructor', () => {
     }
 
     await expect(AdobeState.init(credentials)).rejects
-      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] apikey and/or namespace is missing')
+      .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] must have required properties: namespace')
   })
 })
 
@@ -135,21 +139,29 @@ describe('get', () => {
 
   test('success', async () => {
     const key = 'valid-key'
-    const fetchResponseJson = {
-      expiration: 999,
-      value: 'foo'
+    const fetchBody = 'foo'
+    const expiryHeaderValue = '1707445350000'
+
+    const options = {
+      headersGet: (header) => {
+        if (header === HEADER_KEY_EXPIRES) {
+          return expiryHeaderValue
+        }
+      }
     }
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchBody, options))
 
-    const value = await store.get(key)
-    expect(value).toEqual(fetchResponseJson)
+    const { value, expiration } = await store.get(key)
+    expect(value).toEqual(fetchBody)
+    expect(typeof expiration).toEqual('string')
+    expect(expiration).toEqual(new Date(Number(expiryHeaderValue)).toISOString())
   })
 
   test('invalid key', async () => {
     const key = 'bad/key'
 
-    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key')
+    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
   })
 
   test('not found', async () => {
@@ -195,14 +207,14 @@ describe('put', () => {
     const key = 'invalid/key'
     const value = 'some-value'
 
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
   })
 
   test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
 
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] invalid key and/or value')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /value must be string')
   })
 
   test('coverage: 401 error', async () => {
@@ -330,6 +342,8 @@ describe('any', () => {
 })
 
 describe('private methods', () => {
+  const DEFAULT_REGION = ADOBE_STATE_STORE_REGIONS.at(0)
+
   test('getAuthorizationHeaders (private)', async () => {
     const expectedHeaders = {
       Authorization: `Basic ${fakeCredentials.apikey}`
@@ -348,7 +362,31 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, localhost endpoint', async () => {
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init(fakeCredentials)
+      store.endpoint = 'localhost'
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, 127.0.0.1 endpoint', async () => {
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init(fakeCredentials)
+      store.endpoint = '127.0.0.1'
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('key set, no query params', async () => {
@@ -360,7 +398,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -376,7 +414,28 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/v1/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+    })
+
+    test('no params, region set', async () => {
+      const region = 'apac'
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      // need to instantiate a new store, when env changes
+      const store = await AdobeState.init({ ...fakeCredentials, region })
+
+      const url = store.createRequestUrl()
+      expect(url).toEqual(`https://${region}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+    })
+
+    test('no params, region invalid', async () => {
+      const region = 'some-invalid-region'
+      const env = PROD_ENV
+      getCliEnv.mockReturnValue(env)
+
+      await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
+        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, apac, emea')
     })
   })
 })

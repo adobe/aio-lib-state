@@ -2,15 +2,17 @@
  * AdobeStateCredentials
  * @property namespace - the state store namespace
  * @property apikey - the state store api key
+ * @property region - the region for the Adobe State Store. defaults to 'amer'
  */
 export type AdobeStateCredentials = {
     namespace: string;
     apikey: string;
+    region: 'amer' | 'apac' | 'emea';
 };
 
 /**
  * AdobeState put options
- * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for no expiry. A
+ * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A
  * value of 0 sets default.
  */
 export type AdobeStatePutOptions = {
@@ -19,13 +21,12 @@ export type AdobeStatePutOptions = {
 
 /**
  * AdobeState get return object
- * @property expiration - ISO date string of expiration time for the key-value pair, if the ttl is infinite
- * expiration=null
+ * @property expiration - the ISO-8601 date string of the expiration time for the key-value pair
  * @property value - the value set by put
  */
 export type AdobeStateGetReturnValue = {
-    expiration: string | null;
-    value: any;
+    expiration: string;
+    value: string;
 };
 
 /**
@@ -51,7 +52,7 @@ export class AdobeState {
      * Creates or updates a state key-value pair
      * @param key - state key identifier
      * @param value - state value
-     * @param [options = {}] - put options
+     * @param [options] - put options
      * @returns key
      */
     put(key: string, value: string, options?: AdobeStatePutOptions): Promise<string>;
@@ -127,7 +128,7 @@ export type OpenWhiskCredentials = {
  * `config.ow` or your own
  *
  * OpenWhisk credentials can also be read from environment variables `__OW_NAMESPACE` and `__OW_API_KEY`.
- * @param [config = {}] - used to init the sdk
+ * @param [config] - used to init the sdk
  * @param [config.ow] - {@link OpenWhiskCredentials}. Set those if you want
  * to use ootb credentials to access the state management service. OpenWhisk
  * namespace and auth can also be passed through environment variables:
