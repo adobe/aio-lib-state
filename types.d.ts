@@ -30,6 +30,12 @@ export class StateStore {
      */
     get(key: string): Promise<StateStoreGetReturnValue>;
     /**
+     * Retrieves the keys of all stored values.
+     * If there are no keys returns undefined.
+     * @returns Array with all the keys
+     */
+    getAllKeys(): string[];
+    /**
      * Creates or updates a state key-value pair
      * @param key - state key identifier
      * @param value - state value
@@ -48,6 +54,10 @@ export class StateStore {
      * @returns get response holding value and additional info
      */
     protected _get(key: string): Promise<StateStoreGetReturnValue>;
+    /**
+     * @returns Array with all the keys
+     */
+    _getAllKeys(): string[];
     /**
      * @param key - state key identifier
      * @param value - state value
