@@ -57,6 +57,7 @@ Cloud State Management
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.deleteAll()](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
+    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;boolean&gt;</code>*
 
 <a name="AdobeState+get"></a>
 
@@ -108,6 +109,13 @@ Deletes all key-values
 
 ### *adobeState.any() ⇒ <code>Promise.&lt;boolean&gt;</code>*
 There exists key-values.
+
+**Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
+**Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  
+<a name="AdobeState+stats"></a>
+
+### *adobeState.stats() ⇒ <code>Promise.&lt;boolean&gt;</code>*
+Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  

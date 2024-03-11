@@ -22,7 +22,7 @@ A Node JavaScript abstraction on top of distributed/cloud DBs that exposes a sim
 
 You can initialize the lib with your Adobe I/O Runtime (a.k.a OpenWhisk) credentials.
 
-Please note that currently you must be a customer of [Adobe Developer App Builder](https://www.adobe.io/apis/experienceplatform/project-firefly.html) to use this library. App Builder is a complete framework that enables enterprise developers to build and deploy custom web applications that extend Adobe Experience Cloud solutions and run on Adobe infrastructure.
+Please note that currently, you must be a customer of [Adobe Developer App Builder](https://www.adobe.io/apis/experienceplatform/project-firefly.html) to use this library. App Builder is a complete framework that enables enterprise developers to build and deploy custom web applications that extend Adobe Experience Cloud solutions and run on Adobe infrastructure.
 
 ## Install
 
@@ -46,7 +46,7 @@ npm install @adobe/aio-lib-state
 
   // put
   await state.put('key', 'value')
-  await state.put('another key', 'another value', { ttl: -1 }) // -1 for no expiry, defaults to 86400 (24 hours)
+  await state.put('another key', 'another value', { ttl: -1 }) // -1 for max expiry (365 days), defaults to 86400 (24 hours)
 
   // delete
   await state.delete('key')
@@ -68,64 +68,14 @@ set `DEBUG=@adobe/aio-lib-state*` to see debug logs.
 
 ## Adobe I/O State Store Limitations (per user)
 
-Apply when init with OW credentials (and not own cloud DB credentials):
+Apply when init with I/O Runtime credentials:
 
-- Max state value size: `2MB`
-- Max state key size: `1024 bytes`
-- Max total state size: `10 GB`
-- Token expiry (need to re-init after expiry): `1 hour`
-- Non supported characters for state keys are: `'/', '\', '?', '#'`
-
-## Adobe I/O State Store Consistency Guarantees
-
-### Consistency across State Instances
-
-Operations across multiple State instances (returned by `stateLib.init()`) are **eventually consistent**. For example, let's consider two state instances `a` and `b` initialized with the same credentials, then
-
-```javascript
-const a = await state.init()
-const b = await state.init()
-await a.put('food', 'beans')
-await b.put('food', 'carrots')
-console.log(await a.get('food'))
-```
-
-might log either `beans` or `carrots` but eventually `a.get('food')` will always return `carrots`.
-
-Operations within a single instance however are guaranteed to be **strongly consistent**.
-
-Note that atomicity is ensured, i.e.  `a.get('food')` will never return something like `beacarronsts`.
-
-### Adobe I/O Runtime considerations
-
-State lib is expected to be used in Adobe I/O Runtime serverless actions. A new State instance can be created on every new invocation inside the main function of the serverless action as follows:
-
-```javascript
-const State = require('@adobe/aio-sdk').State
-
-function main (params) {
-  const state = await State.init()
-  // do operations on state
-```
-
-It's important to understand that in this case, on every invocation a new State instance is created, meaning that operations will be only **eventually consistent** across invocations but **strongly consistent** within an invocation.
-
-Also note that reusing the State instance by storing it in a global variable outside of the main function would not ensure **strong consistency** across all invocations as the action could be executed in a separate Docker container.
-
-Here is an example showcasing two invocations of the same action with an initial state `{ key: 'hello'}`:
-
-Invocation A                          |     Invocation B                      |
-| :---------------------------------- | ----------------------------------:   |
-`state = State.init()`                |                                       |
-`state.get(key)` => returns hello     |                                       |
-`state.put(key, 'bonjour')`           |                                       |
-`state.get(key)` => returns bonjour   |                                       |
-|                                     | `state = State.init()`                |
-|                                     | `state.get(key)` => hello OR bonjour  |
-|                                     | `state.put(key, 'bonjour')`           |
-|                                     | `state.get(key)` => returns bonjour   |
-
-Because of **eventual consistency** across State instances, in invocation B, the first `state.get(key)` might return an older value although invocation A has updated the value already.
+- Namespace must be in valid AppBuilder format: `amsorg-project(-workspace)?`
+- Max state value size: `1MB`.
+- Max state key size: `1024 bytes`.
+- Supported characters are alphanumeric and `-`,`_`,`.`
+- Max-supported TTL is 365 days.
+- Default TTL is 1 day.
 
 ## Troubleshooting
 

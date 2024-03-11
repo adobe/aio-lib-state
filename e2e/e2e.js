@@ -22,6 +22,7 @@ const { MAX_TTL_SECONDS } = require('../lib/constants')
 const stateLib = require('../index')
 
 const testKey = 'e2e_test_state_key'
+const testKey2 = 'e2e_test_state_key2'
 
 jest.setTimeout(30000) // thirty seconds per test
 
@@ -31,8 +32,8 @@ const initStateEnv = async (n = 1) => {
   process.env.__OW_API_KEY = process.env[`TEST_AUTH_${n}`]
   process.env.__OW_NAMESPACE = process.env[`TEST_NAMESPACE_${n}`]
   const state = await stateLib.init()
-  // make sure we delete the testKey, note that delete might fail as it is an op under test
-  await state.delete(testKey)
+  // make sure we cleanup the namespace, note that delete might fail as it is an op under test
+  await state.deleteAll()
   return state
 }
 
@@ -74,10 +75,13 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.any()).toEqual(false)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
+    expect(await state.put(testKey2, testValue)).toEqual(testKey2)
     expect(await state.any()).toEqual(true)
+    expect(await state.stats()).toEqual({ bytesKeys: testKey.length + testKey2.length, bytesValues: testValue.length * 2, keys: 2 })
     expect(await state.deleteAll()).toEqual(true)
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.any()).toEqual(false)
+    expect(await state.stats()).toEqual(false)
   })
 
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {
@@ -116,10 +120,10 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   })
 
   test('throw error when get/put with invalid keys', async () => {
-    const invalidKey = 'some/invalid/key'
+    const invalidKey = 'some/invalid:key'
     const state = await initStateEnv()
-    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
-    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
+    await expect(state.put(invalidKey, 'testValue')).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
+    await expect(state.get(invalidKey)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {
@@ -145,9 +149,9 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     await state2.delete(testKey)
   })
 
-  test('error value bigger than 2MB test', async () => {
+  test('error value bigger than 1MB test', async () => {
     const state = await initStateEnv()
-    const bigValue = ('a').repeat(1024 * 1024 * 2 + 1)
+    const bigValue = ('a').repeat(1024 * 1024 + 1)
     let expectedError
 
     try {
