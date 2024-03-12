@@ -2,6 +2,8 @@
 
 ## Requirements
 
+**NOTE**: running the e2e tests will delete all keys in the provided namespaces, use with care!
+
 - To run the test you'll need two OpenWhisk namespaces. Please set the credentials for those in the following env
   variables in an .env file:
   - `TEST_NAMESPACE_1, TEST_AUTH_1, TEST_NAMESPACE_2, TEST_AUTH_2`

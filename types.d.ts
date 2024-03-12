@@ -72,6 +72,11 @@ export class AdobeState {
      * @returns true if exists, false if not
      */
     any(): Promise<boolean>;
+    /**
+     * Get stats.
+     * @returns true if exists, false if not
+     */
+    stats(): Promise<boolean>;
 }
 
 /**

@@ -50,7 +50,8 @@ const wrapInFetchResponse = (body, options = {}) => {
     headers: {
       get: headersGet
     },
-    text: async () => body
+    text: async () => body,
+    json: async () => JSON.parse(body)
   }
 }
 
@@ -161,7 +162,7 @@ describe('get', () => {
   test('invalid key', async () => {
     const key = 'bad/key'
 
-    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
+    await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
   })
 
   test('not found', async () => {
@@ -193,7 +194,7 @@ describe('put', () => {
   })
 
   test('success (string value) with ttl', async () => {
-    const key = 'valid-key'
+    const key = 'valid.for-those_chars'
     const value = 'some-value'
     const fetchResponseJson = {}
 
@@ -207,7 +208,7 @@ describe('put', () => {
     const key = 'invalid/key'
     const value = 'some-value'
 
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_-]{1,1024}$"')
+    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
   })
 
   test('failure (binary value)', async () => {
@@ -326,6 +327,29 @@ describe('any', () => {
   })
 
   test('success', async () => {
+    const fetchResponseJson = JSON.stringify({})
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const value = await store.stats()
+    expect(value).toEqual({})
+  })
+
+  test('not found', async () => {
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
+
+    const value = await store.stats()
+    expect(value).toEqual(false)
+  })
+})
+
+describe('stats()', () => {
+  let store
+
+  beforeEach(async () => {
+    store = await AdobeState.init(fakeCredentials)
+  })
+
+  test('success', async () => {
     const fetchResponseJson = {}
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
 
@@ -346,7 +370,7 @@ describe('private methods', () => {
 
   test('getAuthorizationHeaders (private)', async () => {
     const expectedHeaders = {
-      Authorization: `Basic ${fakeCredentials.apikey}`
+      Authorization: `Basic ${Buffer.from(fakeCredentials.apikey).toString('base64')}`
     }
     const store = await AdobeState.init(fakeCredentials)
 
