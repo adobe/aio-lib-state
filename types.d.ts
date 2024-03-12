@@ -74,9 +74,9 @@ export class AdobeState {
     any(): Promise<boolean>;
     /**
      * Get stats.
-     * @returns true if exists, false if not
+     * @returns namespace stats or false if not exists
      */
-    stats(): Promise<boolean>;
+    stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; } | boolean>;
 }
 
 /**

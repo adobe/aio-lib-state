@@ -57,7 +57,7 @@ Cloud State Management
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.deleteAll()](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
-    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;boolean&gt;</code>*
+    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
 
 <a name="AdobeState+get"></a>
 
@@ -114,11 +114,11 @@ There exists key-values.
 **Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  
 <a name="AdobeState+stats"></a>
 
-### *adobeState.stats() ⇒ <code>Promise.&lt;boolean&gt;</code>*
+### *adobeState.stats() ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
 Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  
+**Returns**: <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code> - namespace stats or false if not exists  
 <a name="validate"></a>
 
 ## validate(schema, data) ⇒ <code>object</code>
