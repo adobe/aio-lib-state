@@ -39,6 +39,13 @@ const initStateEnv = async (n = 1) => {
 
 const waitFor = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+test('env vars', () => {
+  expect(process.env.TEST_AUTH_1).toBeDefined()
+  expect(process.env.TEST_AUTH_2).toBeDefined()
+  expect(process.env.TEST_NAMESPACE_1).toBeDefined()
+  expect(process.env.TEST_NAMESPACE_2).toBeDefined()
+})
+
 describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   test('error bad credentials test: auth is ok but namespace is not', async () => {
     delete process.env.__OW_API_KEY
