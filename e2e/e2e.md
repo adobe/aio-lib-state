@@ -10,9 +10,27 @@
 
 Copy the `.env.example` to your own `.env` in this folder.
 
-## Run
+For local testing, add the environment variable:
+
+```sh
+# do not use the scheme for endpoints
+ADOBE_STATE_STORE_ENDPOINT_PROD=127.0.0.1:8080
+```
+
+Substitute the host with `host.docker.internal` if you are testing with the Dockerized version of the e2e tests.
+
+## Local Run
 
 `npm run e2e`
+
+## Docker Run
+
+```sh
+# build the Docker image
+docker build -f e2e.Dockerfile -t aio-lib-state-e2e .
+# create and run a container based off the Docker image, pass in the environment file
+docker run --env-file e2e/.env -t aio-lib-state-e2e
+```
 
 ## Test overview
 
