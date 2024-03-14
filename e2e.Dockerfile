@@ -1,0 +1,1 @@
+FROM node:20 AS build-envCOPY . /appWORKDIR /appRUN npm iFROM gcr.io/distroless/nodejs20-debian11COPY --from=build-env /app /appWORKDIR /appCMD ["node_modules/jest/bin/jest.js", "-c", "jest.e2e.config.js"]
