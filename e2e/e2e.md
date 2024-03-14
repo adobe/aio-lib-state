@@ -27,7 +27,9 @@ Substitute the host with `host.docker.internal` if you are testing with the Dock
 
 ```sh
 # build the Docker image
-docker build -f e2e.Dockerfile -t aio-lib-state-e2e .
+# multi-arch build: see https://docs.docker.com/build/building/multi-platform/#building-multi-platform-images
+docker buildx create --name mybuilder --bootstrap --use
+docker buildx build -f e2e.Dockerfile --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t aio-lib-state-e2e --load .
 # create and run a container based off the Docker image, pass in the environment file
 docker run --env-file e2e/.env -t aio-lib-state-e2e
 ```
