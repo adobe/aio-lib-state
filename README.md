@@ -16,7 +16,7 @@ governing permissions and limitations under the License.
 [![Downloads/week](https://img.shields.io/npm/dw/@adobe/aio-lib-state.svg)](https://npmjs.org/package/@adobe/aio-lib-state)
 ![Node.js CI](https://github.com/adobe/aio-lib-state/workflows/Node.js%20CI/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-state/master.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-state/) 
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-state/main.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-state/) 
 
 A Node JavaScript abstraction on top of distributed/cloud DBs that exposes a simple state persistence API.
 

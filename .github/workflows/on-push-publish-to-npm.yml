@@ -2,7 +2,7 @@ name: on-push-publish-to-npm
 on:
   push:
     branches:
-      - master # Change this if not your default branch
+      - main # Change this if not your default branch
     paths:
       - 'package.json'
 jobs:
