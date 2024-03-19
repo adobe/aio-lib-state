@@ -263,9 +263,8 @@ describe('put', () => {
     const value = 'some-value'
 
     const error = new Error('some network error')
-    error.code = 502
     mockExponentialBackoff.mockRejectedValue(error)
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_INTERNAL] unexpected response from provider with status: 502')
+    await expect(store.put(key, value)).rejects.toThrow(error.message)
   })
 })
 
@@ -319,7 +318,7 @@ describe('deleteAll', () => {
   })
 })
 
-describe('any', () => {
+describe('stats()', () => {
   let store
 
   beforeEach(async () => {
@@ -342,7 +341,7 @@ describe('any', () => {
   })
 })
 
-describe('stats()', () => {
+describe('any', () => {
   let store
 
   beforeEach(async () => {
