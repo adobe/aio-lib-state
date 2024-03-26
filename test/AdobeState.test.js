@@ -34,8 +34,8 @@ const fakeCredentials = {
 
 const myConstants = {
   ADOBE_STATE_STORE_ENDPOINT: {
-    prod: 'prod-server',
-    stage: 'stage-server'
+    prod: 'prod-server-amer',
+    stage: 'stage-server-amer'
   }
 }
 
@@ -386,7 +386,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://prod-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('no params, localhost endpoint', async () => {
@@ -422,7 +422,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://stage-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -438,7 +438,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`https://${DEFAULT_REGION}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://stage-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
     })
 
     test('no params, region set', async () => {
@@ -450,7 +450,7 @@ describe('private methods', () => {
       const store = await AdobeState.init({ ...fakeCredentials, region })
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`https://${region}.${myConstants.ADOBE_STATE_STORE_ENDPOINT[env]}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://prod-server-${region}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('no params, region invalid', async () => {
