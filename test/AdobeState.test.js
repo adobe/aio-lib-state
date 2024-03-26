@@ -55,14 +55,14 @@ const wrapInFetchResponse = (body, options = {}) => {
   }
 }
 
-const wrapInFetchError = (status) => {
+const wrapInFetchError = (status, body) => {
   return {
     ok: false,
     headers: {
       get: () => 'fake req id'
     },
-    json: async () => 'error',
-    text: async () => 'error',
+    json: async () => JSON.parse(body),
+    text: async () => body,
     status
   }
 }
@@ -253,9 +253,10 @@ describe('put', () => {
   test('coverage: unknown server error', async () => {
     const key = 'some-key'
     const value = 'some-value'
+    const responseBody = 'error: this is the response body'
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(500))
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_INTERNAL] unexpected response from provider with status: 500')
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(500, responseBody))
+    await expect(store.put(key, value)).rejects.toThrow(`[AdobeStateLib:ERROR_INTERNAL] unexpected response from provider with status: 500 body: ${responseBody}`)
   })
 
   test('coverage: unknown error (fetch network failure)', async () => {
@@ -263,9 +264,8 @@ describe('put', () => {
     const value = 'some-value'
 
     const error = new Error('some network error')
-    error.code = 502
     mockExponentialBackoff.mockRejectedValue(error)
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_INTERNAL] unexpected response from provider with status: 502')
+    await expect(store.put(key, value)).rejects.toThrow(error.message)
   })
 })
 
@@ -319,7 +319,7 @@ describe('deleteAll', () => {
   })
 })
 
-describe('any', () => {
+describe('stats()', () => {
   let store
 
   beforeEach(async () => {
@@ -342,7 +342,7 @@ describe('any', () => {
   })
 })
 
-describe('stats()', () => {
+describe('any', () => {
   let store
 
   beforeEach(async () => {
