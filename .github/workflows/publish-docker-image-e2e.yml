@@ -28,4 +28,4 @@ jobs:
           context: .
           file: e2e.Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/e2e-tests:${{ github.event.inputs.tag }}
+          tags: ghcr.io/${{ github.repository }}/aio-lib-state-e2e-tests:${{ github.event.inputs.tag }}
