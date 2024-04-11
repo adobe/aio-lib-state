@@ -58,8 +58,8 @@ test('env vars', () => {
 
 test('if env var ADOBE_STATE_STORE_REGION is set, state object region should be set correctly', async () => {
   const region = process.env.ADOBE_STATE_STORE_REGION ?? ADOBE_STATE_STORE_REGIONS.at(0)
-  const store = await initStateEnv({})
-  expect(store.region).toEqual(region)
+  const state = await initStateEnv({})
+  expect(state.region).toEqual(region)
 })
 
 describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
