@@ -18,6 +18,8 @@ const path = require('node:path')
 // load .env values in the e2e folder, if any
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
+const { ADOBE_STATE_STORE_REGIONS } = require('../lib/constants')
+
 const { MAX_TTL_SECONDS } = require('../lib/constants')
 const stateLib = require('../index')
 
@@ -26,12 +28,14 @@ const testKey2 = 'e2e_test_state_key2'
 
 jest.setTimeout(30000) // thirty seconds per test
 
-const initStateEnv = async (n = 1) => {
-  delete process.env.__OW_API_KEY
-  delete process.env.__OW_NAMESPACE
-  process.env.__OW_API_KEY = process.env[`TEST_AUTH_${n}`]
-  process.env.__OW_NAMESPACE = process.env[`TEST_NAMESPACE_${n}`]
-  const state = await stateLib.init()
+/** @private */
+const initStateEnv = async ({
+  n = 1,
+  auth = process.env[`TEST_AUTH_${n}`],
+  namespace = process.env[`TEST_NAMESPACE_${n}`],
+  region = process.env.ADOBE_STATE_STORE_REGION
+} = {}) => {
+  const state = await stateLib.init({ ow: { auth, namespace }, region })
   // make sure we cleanup the namespace, note that delete might fail as it is an op under test
   await state.deleteAll()
   return state
@@ -44,19 +48,31 @@ test('env vars', () => {
   expect(process.env.TEST_AUTH_2).toBeDefined()
   expect(process.env.TEST_NAMESPACE_1).toBeDefined()
   expect(process.env.TEST_NAMESPACE_2).toBeDefined()
+
+  if (process.env.ADOBE_STATE_STORE_REGION) {
+    console.log('REGION is set to', process.env.ADOBE_STATE_STORE_REGION)
+  } else {
+    console.log('REGION is set to the default region of', ADOBE_STATE_STORE_REGIONS.at(0))
+  }
+})
+
+test('if env var ADOBE_STATE_STORE_REGION is set, state object region should be set correctly', async () => {
+  const region = process.env.ADOBE_STATE_STORE_REGION ?? ADOBE_STATE_STORE_REGIONS.at(0)
+  const store = await initStateEnv({})
+  expect(store.region).toEqual(region)
 })
 
 describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   test('error bad credentials test: auth is ok but namespace is not', async () => {
-    delete process.env.__OW_API_KEY
-    delete process.env.__OW_NAMESPACE
-    process.env.__OW_API_KEY = process.env.TEST_AUTH_1
-    process.env.__OW_NAMESPACE = process.env.TEST_NAMESPACE_1 + 'bad'
     let expectedError
 
     try {
-      const store = await stateLib.init()
-      await store.get('something')
+      const state = await initStateEnv({
+        auth: process.env.TEST_AUTH_1,
+        namespace: process.env.TEST_NAMESPACE_1 + 'bad'
+      })
+
+      await state.get('something')
     } catch (e) {
       expectedError = e
     }
@@ -134,8 +150,8 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
   })
 
   test('isolation tests: get, write, delete on same key for two namespaces do not interfere', async () => {
-    const state1 = await initStateEnv(1)
-    const state2 = await initStateEnv(2)
+    const state1 = await initStateEnv({ n: 1 })
+    const state2 = await initStateEnv({ n: 2 })
 
     const testValue1 = 'one value'
     const testValue2 = 'some other value'

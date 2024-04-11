@@ -23,22 +23,27 @@ Substitute the host with `host.docker.internal` if you are testing with the Dock
 
 You might have to connect to internal servers for your e2e testing.
 
-For `prod`, use these two environment variables:
+For `prod`, use these three environment variables:
 
 ```sh
 # do not use the scheme for endpoints
 ADOBE_STATE_STORE_ENDPOINT_PROD=my-prod-server-here.com
-# can be omitted as well, since it defaults to prod
+# set the env, if omitted, defaults to 'prod'
 AIO_CLI_ENV=prod
+# set the region, if omitted, defaults to 'amer'
+ADOBE_STATE_STORE_REGION=emea
+
 ```
 
-For `stage`, use these two environment variables:
+For `stage`, use these three environment variables:
 
 ```sh
 # do not use the scheme for endpoints
 ADOBE_STATE_STORE_ENDPOINT_STAGE=my-stage-server-here.com
 # set the env
 AIO_CLI_ENV=stage
+# set the region, if omitted, defaults to 'amer'
+ADOBE_STATE_STORE_REGION=emea
 ```
 
 ## Local Run

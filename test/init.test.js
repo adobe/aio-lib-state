@@ -10,6 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 const stateLib = require('../index')
+const { ADOBE_STATE_STORE_REGIONS } = require('../lib/constants')
 
 describe('init', () => {
   const env = process.env
@@ -45,5 +46,19 @@ describe('init', () => {
 
     expect(store.namespace).toEqual(process.env.__OW_NAMESPACE)
     expect(store.apikey).toEqual(process.env.__OW_API_KEY)
+    expect(store.region).toEqual(ADOBE_STATE_STORE_REGIONS.at(0))
+  })
+
+  test('when config.region is set, OW creds as env variables', async () => {
+    process.env.__OW_NAMESPACE = 'some-namespace'
+    process.env.__OW_API_KEY = 'some-api-key'
+    const region = 'emea'
+
+    expect.hasAssertions()
+    const store = await stateLib.init({ region })
+
+    expect(store.namespace).toEqual(process.env.__OW_NAMESPACE)
+    expect(store.apikey).toEqual(process.env.__OW_API_KEY)
+    expect(store.region).toEqual(region)
   })
 })
