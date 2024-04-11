@@ -19,6 +19,28 @@ ADOBE_STATE_STORE_ENDPOINT_PROD=127.0.0.1:8080
 
 Substitute the host with `host.docker.internal` if you are testing with the Dockerized version of the e2e tests.
 
+## Canary Testing
+
+You might have to connect to internal servers for your e2e testing.
+
+For `prod`, use these two environment variables:
+
+```sh
+# do not use the scheme for endpoints
+ADOBE_STATE_STORE_ENDPOINT_PROD=my-prod-server-here.com
+# can be omitted as well, since it defaults to prod
+AIO_CLI_ENV=prod
+```
+
+For `stage`, use these two environment variables:
+
+```sh
+# do not use the scheme for endpoints
+ADOBE_STATE_STORE_ENDPOINT_STAGE=my-stage-server-here.com
+# set the env
+AIO_CLI_ENV=stage
+```
+
 ## Local Run
 
 `npm run e2e`

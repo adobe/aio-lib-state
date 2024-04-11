@@ -1,0 +1,31 @@
+name: Publish Docker Image (e2e tests)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Docker Tag'
+        required: true
+        default: 'latest'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: e2e.Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/aio-lib-state-e2e-tests:${{ github.event.inputs.tag }}
