@@ -14,6 +14,11 @@ on:
         description: 'csv of dependencies to update with the dist-tag'
         required: false
         default: '@adobe/aio-lib-core-errors,@adobe/aio-lib-core-logging,@adobe/aio-lib-core-tvm'
+      skip-dependencies-to-update:
+        description: 'skip setting dependencies to update'
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   checkout:
