@@ -18,7 +18,7 @@ on:
         description: 'skip setting dependencies to update'
         type: boolean
         required: false
-        default: true
+        default: false
 
 jobs:
   checkout:
