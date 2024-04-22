@@ -7,6 +7,7 @@
 - To run the test you'll need two OpenWhisk namespaces. Please set the credentials for those in the following env
   variables in an .env file:
   - `TEST_NAMESPACE_1, TEST_AUTH_1, TEST_NAMESPACE_2, TEST_AUTH_2`
+  - Make sure to use namespaces that are prefixed with `development-*` for non-prod environments
 
 Copy the `.env.example` to your own `.env` in this folder.
 
