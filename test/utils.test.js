@@ -79,8 +79,8 @@ describe('isInternalToAdobeRuntime', () => {
     expect(isInternalToAdobeRuntime()).toBeTruthy()
     jest.isolateModules(() => {
       const constants = require('../lib/constants')
-      expect(constants.ADOBE_STATE_STORE_ENDPOINT.prod).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_PROD_INTERNAL)
-      expect(constants.ADOBE_STATE_STORE_ENDPOINT.stage).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_STAGE_INTERNAL)
+      expect(constants.ENDPOINTS.prod).toEqual(constants.ENDPOINT_PROD_INTERNAL)
+      expect(constants.ENDPOINTS.stage).toEqual(constants.ENDPOINT_STAGE_INTERNAL)
     })
   })
 
@@ -93,8 +93,8 @@ describe('isInternalToAdobeRuntime', () => {
     expect(isInternalToAdobeRuntime()).toBeFalsy()
     jest.isolateModules(() => {
       const constants = require('../lib/constants')
-      expect(constants.ADOBE_STATE_STORE_ENDPOINT.prod).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_PROD)
-      expect(constants.ADOBE_STATE_STORE_ENDPOINT.stage).toEqual(constants.ADOBE_STATE_STORE_ENDPOINT_STAGE)
+      expect(constants.ENDPOINTS.prod).toEqual(constants.ENDPOINT_PROD)
+      expect(constants.ENDPOINTS.stage).toEqual(constants.ENDPOINT_STAGE)
     })
   })
 })

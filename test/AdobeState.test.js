@@ -11,12 +11,12 @@ governing permissions and limitations under the License.
 */
 
 // @ts-nocheck
-const { getCliEnv, DEFAULT_ENV, PROD_ENV, STAGE_ENV } = require('@adobe/aio-lib-env')
+const { DEFAULT_ENV, PROD_ENV, STAGE_ENV } = require('@adobe/aio-lib-env')
 const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
-const { API_VERSION, ADOBE_STATE_STORE_REGIONS, HEADER_KEY_EXPIRES } = require('../lib/constants')
+const { ALLOWED_REGIONS, HEADER_KEY_EXPIRES, API_VERSION } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -30,13 +30,6 @@ HttpExponentialBackoff.mockImplementation(() => {
 const fakeCredentials = {
   apikey: 'some-api-key',
   namespace: 'some-namespace'
-}
-
-const myConstants = {
-  ADOBE_STATE_STORE_ENDPOINT: {
-    prod: 'prod-server-amer',
-    stage: 'stage-server-amer'
-  }
 }
 
 // helpers //////////////////////////////////////////////////////////
@@ -69,26 +62,23 @@ const wrapInFetchError = (status, body) => {
 
 // mocks //////////////////////////////////////////////////////////
 
-jest.mock('@adobe/aio-lib-core-networking')
+const mockCLIEnv = jest.fn()
 
-jest.mock('../lib/constants', () => {
-  return {
-    ...jest.requireActual('../lib/constants'),
-    ...myConstants
-  }
-})
+jest.mock('@adobe/aio-lib-core-networking')
 
 jest.mock('@adobe/aio-lib-env', () => {
   return {
     ...jest.requireActual('@adobe/aio-lib-env'),
-    getCliEnv: jest.fn()
+    getCliEnv: () => mockCLIEnv()
   }
 })
 
 // jest globals //////////////////////////////////////////////////////////
 
 beforeEach(() => {
-  getCliEnv.mockReturnValue(DEFAULT_ENV)
+  delete process.env.AIO_STATE_ENDPOINT
+  delete process.env.AIO_STATE_API_VERSION
+  mockCLIEnv.mockReturnValue(DEFAULT_ENV)
   mockExponentialBackoff.mockReset()
 })
 
@@ -366,7 +356,7 @@ describe('any', () => {
 })
 
 describe('private methods', () => {
-  const DEFAULT_REGION = ADOBE_STATE_STORE_REGIONS.at(0)
+  const DEFAULT_REGION = ALLOWED_REGIONS.at(0)
 
   test('getAuthorizationHeaders (private)', async () => {
     const expectedHeaders = {
@@ -380,49 +370,37 @@ describe('private methods', () => {
   describe('createRequestUrl (private)', () => {
     test('no params', async () => {
       const env = PROD_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`https://prod-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
-    test('no params, localhost endpoint', async () => {
+    test('no params, custom endpoint', async () => {
       const env = PROD_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
       const store = await AdobeState.init(fakeCredentials)
-      store.endpoint = 'localhost'
+      store.endpoint = 'http://localhost'
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
-    })
-
-    test('no params, 127.0.0.1 endpoint', async () => {
-      const env = PROD_ENV
-      getCliEnv.mockReturnValue(env)
-
-      // need to instantiate a new store, when env changes
-      const store = await AdobeState.init(fakeCredentials)
-      store.endpoint = '127.0.0.1'
-
-      const url = store.createRequestUrl()
-      expect(url).toEqual(`http://${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`${store.endpoint}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('key set, no query params', async () => {
       const key = 'some-key'
       const env = STAGE_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`https://stage-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -432,34 +410,100 @@ describe('private methods', () => {
       }
       const key = 'some-key'
       const env = STAGE_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`https://stage-server-${DEFAULT_REGION}/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
     })
 
     test('no params, region set', async () => {
       const region = 'apac'
       const env = PROD_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       // need to instantiate a new store, when env changes
       const store = await AdobeState.init({ ...fakeCredentials, region })
 
       const url = store.createRequestUrl()
-      expect(url).toEqual(`https://prod-server-${region}/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+      expect(url).toEqual(`https://storage-state-${region}.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}`)
     })
 
     test('no params, region invalid', async () => {
       const region = 'some-invalid-region'
       const env = PROD_ENV
-      getCliEnv.mockReturnValue(env)
+      mockCLIEnv.mockReturnValue(env)
 
       await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
         .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, apac, emea')
     })
+  })
+
+  test('custom AIO_STATE_API_VERSION, default env and region', async () => {
+    jest.resetModules()
+    process.env.AIO_STATE_API_VERSION = 'v5'
+    const env = PROD_ENV
+    mockCLIEnv.mockReturnValue(env)
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-amer.app-builder.adp.adobe.io/v5/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('custom AIO_STATE_API_VERSION, stage, emea', async () => {
+    jest.resetModules()
+    process.env.AIO_STATE_API_VERSION = 'v5'
+    const region = 'emea'
+    const env = STAGE_ENV
+    mockCLIEnv.mockReturnValue(env)
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials, region })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-${region}.stg.app-builder.adp.adobe.io/v5/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('custom AIO_STATE_ENDPOINT', async () => {
+    jest.resetModules()
+    process.env.AIO_STATE_ENDPOINT = 'https://custom.abc.com'
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://custom.abc.com/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('custom AIO_STATE_ENDPOINT, env and region should have no effect', async () => {
+    jest.resetModules()
+    process.env.AIO_STATE_ENDPOINT = 'https://custom.abc.com'
+    const env = STAGE_ENV
+    const region = 'apac'
+    mockCLIEnv.mockReturnValue(env)
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials, region })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://custom.abc.com/${API_VERSION}/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('custom AIO_STATE_ENDPOINT, custom AIO_STATE_API_VERSION', async () => {
+    jest.resetModules()
+    process.env.AIO_STATE_ENDPOINT = 'https://custom.abc.com'
+    process.env.AIO_STATE_API_VERSION = 'v5'
+    const env = PROD_ENV
+    mockCLIEnv.mockReturnValue(env)
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://custom.abc.com/v5/containers/${fakeCredentials.namespace}`)
   })
 })
