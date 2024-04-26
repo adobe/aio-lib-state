@@ -24,7 +24,7 @@ Substitute the host with `host.docker.internal` if you are testing with the Dock
 You might have to connect to internal servers for your e2e testing.
 
 ```sh
-AIO_STATE_ENDPOINT=https://my-prod-server-here.com
+AIO_STATE_ENDPOINT=https://my-server-here.com
 ```
 
 ## Local Run
