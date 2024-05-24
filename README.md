@@ -38,6 +38,7 @@ npm install @adobe/aio-lib-state
   const stateLib = require('@adobe/aio-lib-state')
 
   // init when running in an Adobe I/O Runtime action (OpenWhisk) (uses env vars __OW_API_KEY and __OW_NAMESPACE automatically)
+  // do not cache the state instance, i.e. ensure that stateLib.init() is called at every main() Runtime invocation.
   const state = await stateLib.init()
   // or if you want to use your own cloud DB account (make sure your partition key path is /partitionKey)
   const state = await stateLib.init({ cosmos: { endpoint, masterKey, databaseId, containerId, partitionKey } })
