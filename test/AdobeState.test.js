@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 /*
 Copyright 2024 Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -52,7 +53,7 @@ const wrapInFetchError = (status, body) => {
   return {
     ok: false,
     headers: {
-      get: () => 'fake req id'
+      get: () => 'fake-req-id'
     },
     json: async () => JSON.parse(body),
     text: async () => body,
@@ -213,7 +214,12 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(401))
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_UNAUTHORIZED] you are not authorized to access underlying DB provider')
+    try {
+      expect(await store.put(key, value)).rejects()
+    } catch (e) {
+      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
+      expect(e.message).toEqual('[AdobeStateLib:ERROR_UNAUTHORIZED] you are not authorized to access State service')
+    }
   })
 
   test('coverage: 403 error', async () => {
@@ -221,7 +227,12 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(403))
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access underlying DB provider, make sure your credentials are valid')
+    try {
+      expect(await store.put(key, value)).rejects()
+    } catch (e) {
+      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
+      expect(e.message).toEqual('[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access State service, make sure your credentials are valid')
+    }
   })
 
   test('coverage: 413 error', async () => {
@@ -229,7 +240,12 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(413))
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large underlying DB provider')
+    try {
+      expect(await store.put(key, value)).rejects()
+    } catch (e) {
+      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
+      expect(e.message).toEqual('[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large State service')
+    }
   })
 
   test('coverage: 429 error', async () => {
@@ -237,7 +253,12 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(429))
-    await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] Request rate too high. Please retry after sometime.')
+    try {
+      expect(await store.put(key, value)).rejects()
+    } catch (e) {
+      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
+      expect(e.message).toEqual('[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] Request rate too high. Please retry after sometime.')
+    }
   })
 
   test('coverage: unknown server error', async () => {
@@ -246,7 +267,12 @@ describe('put', () => {
     const responseBody = 'error: this is the response body'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(500, responseBody))
-    await expect(store.put(key, value)).rejects.toThrow(`[AdobeStateLib:ERROR_INTERNAL] unexpected response from provider with status: 500 body: ${responseBody}`)
+    try {
+      expect(await store.put(key, value)).rejects()
+    } catch (e) {
+      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
+      expect(e.message).toEqual(`[AdobeStateLib:ERROR_INTERNAL] unexpected response from State service with status: 500 body: ${responseBody}`)
+    }
   })
 
   test('coverage: unknown error (fetch network failure)', async () => {
@@ -332,6 +358,76 @@ describe('stats()', () => {
   })
 })
 
+describe('list()', () => {
+  let store
+
+  beforeEach(async () => {
+    store = await AdobeState.init(fakeCredentials)
+  })
+
+  test('validation', async () => {
+    expect(() => store.list({ pattern: 'illegalchar*!"' })).toThrow('must match')
+    expect(() => store.list({ countHint: 'f' })).toThrow('must be integer')
+    expect(() => store.list({ countHint: 9 })).toThrow('must be in the [10, 1000] range')
+    expect(() => store.list({ countHint: 1001 })).toThrow('must be in the [10, 1000] range')
+  })
+
+  test('list 3 iterations', async () => {
+    const fetchResponseJson = JSON.stringify({
+      keys: ['a', 'b', 'c'],
+      cursor: 1
+    })
+    const fetchResponseJson2 = JSON.stringify({
+      keys: ['d', 'e'],
+      cursor: 2
+    })
+    const fetchResponseJson3 = JSON.stringify({
+      keys: ['f'],
+      cursor: 0
+    })
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson))
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson2))
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson3))
+
+    const allKeys = []
+    for await (const { keys } of store.list()) {
+      allKeys.push(...keys)
+    }
+    expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+  })
+
+  test('list 3 iterations with pattern and countHint', async () => {
+    const fetchResponseJson = JSON.stringify({
+      keys: ['a', 'b', 'c'],
+      cursor: 1
+    })
+    const fetchResponseJson2 = JSON.stringify({
+      keys: ['d', 'e'],
+      cursor: 2
+    })
+    const fetchResponseJson3 = JSON.stringify({
+      keys: ['f'],
+      cursor: 0
+    })
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson))
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson2))
+    mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson3))
+
+    const allKeys = []
+    for await (const { keys } of store.list({ pattern: 'valid*', countHint: 55 })) {
+      allKeys.push(...keys)
+    }
+    expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+  })
+
+  test('not found', async () => {
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
+
+    const value = await store.list().next()
+    expect(value).toEqual({ done: true, value: { keys: [] } })
+  })
+})
+
 describe('any', () => {
   let store
 
@@ -392,7 +488,7 @@ describe('private methods', () => {
     })
 
     test('key set, no query params', async () => {
-      const key = 'some-key'
+      const key = '/data/some-key'
       const env = STAGE_ENV
       mockCLIEnv.mockReturnValue(env)
 
@@ -400,7 +496,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key)
-      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}`)
+      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}${key}`)
     })
 
     test('key set, some query params', async () => {
@@ -408,7 +504,7 @@ describe('private methods', () => {
         foo: 'bar',
         cat: 'bat'
       }
-      const key = 'some-key'
+      const key = '/data/some-key'
       const env = STAGE_ENV
       mockCLIEnv.mockReturnValue(env)
 
@@ -416,7 +512,7 @@ describe('private methods', () => {
       const store = await AdobeState.init(fakeCredentials)
 
       const url = store.createRequestUrl(key, queryParams)
-      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}/data/${key}?${querystring.stringify(queryParams)}`)
+      expect(url).toEqual(`https://storage-state-${DEFAULT_REGION}.stg.app-builder.adp.adobe.io/${API_VERSION}/containers/${fakeCredentials.namespace}${key}?${querystring.stringify(queryParams)}`)
     })
 
     test('no params, region set', async () => {
