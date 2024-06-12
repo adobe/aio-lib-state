@@ -366,10 +366,44 @@ describe('list()', () => {
   })
 
   test('validation', async () => {
-    expect(() => store.list({ pattern: 'illegalchar*!"' })).toThrow('must match')
+    expect(() => store.list({ match: 'illegalchar*!"' })).toThrow('must match')
     expect(() => store.list({ countHint: 'f' })).toThrow('must be integer')
-    expect(() => store.list({ countHint: 9 })).toThrow('must be in the [10, 1000] range')
-    expect(() => store.list({ countHint: 1001 })).toThrow('must be in the [10, 1000] range')
+    expect(() => store.list({ countHint: 99 })).toThrow('must be in the [100, 1000] range')
+    expect(() => store.list({ countHint: 1001 })).toThrow('must be in the [100, 1000] range')
+  })
+
+  test('not found', async () => {
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
+
+    const it = store.list()
+    expect(await it.next()).toEqual({ done: false, value: { keys: [] } })
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    let iters = 0
+    for await (const { keys } of store.list()) {
+      ++iters
+      expect(keys).toStrictEqual([])
+    }
+    expect(iters).toBe(1)
+  })
+
+  test('1 iteration', async () => {
+    const fetchResponseJson = JSON.stringify({
+      keys: ['a', 'b', 'c'],
+      cursor: 0
+    })
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const it = store.list()
+    expect(await it.next()).toEqual({ done: false, value: { keys: ['a', 'b', 'c'] } })
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    let iters = 0
+    for await (const { keys } of store.list()) {
+      ++iters
+      expect(keys).toStrictEqual(['a', 'b', 'c'])
+    }
+    expect(iters).toBe(1)
   })
 
   test('list 3 iterations', async () => {
@@ -414,17 +448,10 @@ describe('list()', () => {
     mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson3))
 
     const allKeys = []
-    for await (const { keys } of store.list({ pattern: 'valid*', countHint: 55 })) {
+    for await (const { keys } of store.list({ pattern: 'valid*', countHint: 1000 })) {
       allKeys.push(...keys)
     }
     expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
-  })
-
-  test('not found', async () => {
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
-
-    const value = await store.list().next()
-    expect(value).toEqual({ done: true, value: { keys: [] } })
   })
 })
 

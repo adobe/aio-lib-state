@@ -70,7 +70,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
       }))
   })
 
-  test('key-value basic test on one key with string value: put, get, delete, any, deleteAll', async () => {
+  test('key-value basic test on one key with string value: put, get, delete, any, stats, deleteAll', async () => {
     const state = await initStateEnv()
 
     const testValue = 'a string'
@@ -124,6 +124,129 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
     await waitFor(3000) // give it one more sec - ttl is not so precise
     expect(await state.get(testKey)).toEqual(undefined)
+  })
+
+  test('listKeys test: few < 128 keys, many, and expired entries', async () => {
+    const state = await initStateEnv()
+    await state.deleteAll() // cleanup
+
+    const genKeyStrings = (n) => {
+      return (new Array(n).fill(0).map((_, idx) => {
+        const char = String.fromCharCode(97 + idx % 26)
+        // list-[a-z]-[0-(N-1)]
+        return `list-${char}-${idx}`
+      }))
+    }
+    const putKeys = async (keys, ttl) => {
+      const _putKeys = async (keys, ttl) => {
+        await Promise.all(keys.map(async (k, idx) => await state.put(k, `value-${idx}`, { ttl })))
+      }
+
+      const batchSize = 20
+      let i = 0
+      while (i < keys.length - batchSize) {
+        await _putKeys(keys.slice(i, i + batchSize), ttl)
+        i += batchSize
+      }
+      // final call
+      _putKeys(keys.slice(i), ttl)
+    }
+
+    // 1. test with not many elements, one iteration should return all
+    const keys90 = genKeyStrings(90).sort()
+    await putKeys(keys90, 60)
+
+    let it = state.list()
+    let ret = await it.next()
+    expect(ret.value.keys.sort()).toEqual(keys90)
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ match: 'list-*' })
+    ret = await it.next()
+    expect(ret.value.keys.sort()).toEqual(keys90)
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ match: 'list-a*' })
+    ret = await it.next()
+    expect(ret.value.keys.sort()).toEqual(['list-a-0', 'list-a-26', 'list-a-52', 'list-a-78'])
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ match: 'list-*-1' })
+    ret = await it.next()
+    expect(ret.value.keys.sort()).toEqual(['list-b-1'])
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    // 2. test with many elements and large countHint
+    const keys900 = genKeyStrings(900)
+    await putKeys(keys900, 60)
+
+    it = state.list({ countHint: 1000 })
+    ret = await it.next()
+    expect(ret.value.keys.length).toEqual(900)
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ countHint: 1000, match: 'list-*' })
+    ret = await it.next()
+    expect(ret.value.keys.length).toEqual(900)
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ countHint: 1000, match: 'list-z*' })
+    ret = await it.next()
+    expect(ret.value.keys.length).toEqual(34)
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    it = state.list({ match: 'list-*-1' })
+    ret = await it.next()
+    expect(ret.value.keys.sort()).toEqual(['list-b-1'])
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    // 3. test with many elements while iterating
+    let iterations = 0
+    let retArray = []
+    for await (const { keys } of state.list()) {
+      iterations++
+      retArray.push(...keys)
+    }
+    expect(iterations).toBeGreaterThan(5) // should be around 9-10
+    expect(retArray.length).toEqual(900)
+
+    iterations = 0
+    retArray = []
+    for await (const { keys } of state.list({ match: 'list-*' })) {
+      iterations++
+      retArray.push(...keys)
+    }
+    expect(iterations).toBeGreaterThan(5) // should be around 9-10
+    expect(retArray.length).toEqual(900)
+
+    iterations = 0
+    retArray = []
+    for await (const { keys } of state.list({ match: 'list-z*' })) {
+      iterations++
+      retArray.push(...keys)
+    }
+    expect(iterations).toEqual(1)
+    expect(retArray.length).toEqual(34)
+
+    iterations = 0
+    retArray = []
+    for await (const { keys } of state.list({ match: 'list-*-1' })) {
+      iterations++
+      retArray.push(...keys)
+    }
+    expect(iterations).toEqual(1)
+    expect(retArray.length).toEqual(1)
+
+    // 4. make sure expired keys aren't listed
+    await putKeys(keys90, 1)
+    await waitFor(2000)
+
+    it = state.list({ countHint: 1000 })
+    ret = await it.next()
+    expect(ret.value.keys.length).toEqual(810) // 900 - 90
+    expect(await it.next()).toEqual({ done: true, value: undefined })
+
+    await state.deleteAll()
   })
 
   test('throw error when get/put with invalid keys', async () => {
