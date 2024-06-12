@@ -149,7 +149,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
         i += batchSize
       }
       // final call
-      _putKeys(keys.slice(i), ttl)
+      await _putKeys(keys.slice(i), ttl)
     }
 
     // 1. test with not many elements, one iteration should return all
