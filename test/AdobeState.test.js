@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-conditional-expect */
 /*
 Copyright 2024 Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -214,12 +213,13 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(401))
-    try {
-      expect(await store.put(key, value)).rejects()
-    } catch (e) {
-      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
-      expect(e.message).toEqual('[AdobeStateLib:ERROR_UNAUTHORIZED] you are not authorized to access State service')
-    }
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: '[AdobeStateLib:ERROR_UNAUTHORIZED] you are not authorized to access State service'
+      }))
   })
 
   test('coverage: 403 error', async () => {
@@ -227,12 +227,13 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(403))
-    try {
-      expect(await store.put(key, value)).rejects()
-    } catch (e) {
-      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
-      expect(e.message).toEqual('[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access State service, make sure your credentials are valid')
-    }
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: '[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access State service, make sure your credentials are valid'
+      }))
   })
 
   test('coverage: 413 error', async () => {
@@ -240,12 +241,13 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(413))
-    try {
-      expect(await store.put(key, value)).rejects()
-    } catch (e) {
-      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
-      expect(e.message).toEqual('[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large State service')
-    }
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: '[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large State service'
+      }))
   })
 
   test('coverage: 429 error', async () => {
@@ -253,12 +255,13 @@ describe('put', () => {
     const value = 'some-value'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(429))
-    try {
-      expect(await store.put(key, value)).rejects()
-    } catch (e) {
-      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
-      expect(e.message).toEqual('[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] Request rate too high. Please retry after sometime.')
-    }
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: '[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] Request rate too high. Please retry after sometime.'
+      }))
   })
 
   test('coverage: unknown server error', async () => {
@@ -267,12 +270,13 @@ describe('put', () => {
     const responseBody = 'error: this is the response body'
 
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(500, responseBody))
-    try {
-      expect(await store.put(key, value)).rejects()
-    } catch (e) {
-      expect(e.sdkDetails.requestId).toEqual('fake-req-id')
-      expect(e.message).toEqual(`[AdobeStateLib:ERROR_INTERNAL] unexpected response from State service with status: 500 body: ${responseBody}`)
-    }
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: `[AdobeStateLib:ERROR_INTERNAL] unexpected response from State service with status: 500 body: ${responseBody}`
+      }))
   })
 
   test('coverage: unknown error (fetch network failure)', async () => {
@@ -448,6 +452,7 @@ describe('list()', () => {
     mockExponentialBackoff.mockResolvedValueOnce(wrapInFetchResponse(fetchResponseJson3))
 
     const allKeys = []
+    // no pattern matching is happening on the client, we just check that the pattern is in a valid format
     for await (const { keys } of store.list({ pattern: 'valid*', countHint: 1000 })) {
       allKeys.push(...keys)
     }
