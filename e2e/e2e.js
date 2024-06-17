@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-/* ************* NOTE 1: these tests must be run sequentially, jest does it by default within a SINGLE file ************* */
+/* ************* NOTE 1: these tests must be run sequentially, using --runInBand ************* */
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
 const path = require('node:path')
@@ -20,11 +20,13 @@ require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const { MAX_TTL_SECONDS } = require('../lib/constants')
 const stateLib = require('../index')
+const { randomInt } = require('node:crypto')
 
-const testKey = 'e2e_test_state_key'
-const testKey2 = 'e2e_test_state_key2'
+const uniquePrefix = `${Date.now()}.${randomInt(10)}`
+const testKey = `${uniquePrefix}__e2e_test_state_key`
+const testKey2 = `${uniquePrefix}__e2e_test_state_key2`
 
-jest.setTimeout(120000) // 2 minutes per test
+jest.setTimeout(60000) // 1 minute per test
 
 const initStateEnv = async (n = 1) => {
   delete process.env.__OW_API_KEY
@@ -32,8 +34,10 @@ const initStateEnv = async (n = 1) => {
   process.env.__OW_API_KEY = process.env[`TEST_AUTH_${n}`]
   process.env.__OW_NAMESPACE = process.env[`TEST_NAMESPACE_${n}`]
   const state = await stateLib.init()
-  // make sure we cleanup the namespace, note that delete might fail as it is an op under test
-  await state.deleteAll()
+  // // make sure we cleanup the namespace, note that delete might fail as it is an op under test
+  // await state.delete(`${uniquePrefix}*`)
+  await state.delete(testKey)
+  await state.delete(testKey2)
   return state
 }
 
@@ -70,25 +74,38 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
       }))
   })
 
-  test('key-value basic test on one key with string value: put, get, delete, any, stats, deleteAll', async () => {
+  test('key-value basic test on one key with string value: put, get, delete, any, stats', async () => {
     const state = await initStateEnv()
 
     const testValue = 'a string'
+    const testValue2 = 'a longer string'
 
     expect(await state.get(testKey)).toEqual(undefined)
     expect(await state.put(testKey, testValue)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(expect.objectContaining({ value: testValue, expiration: expect.any(String) }))
+
+    expect(await state.any()).toEqual(true)
+    const stats = await state.stats()
+    expect(stats).toBeDefined()
+    expect(stats.keys).toBeGreaterThanOrEqual(1)
+    expect(stats.bytesKeys).toBeGreaterThanOrEqual(testKey.length)
+    expect(stats.bytesValues).toBeGreaterThanOrEqual(testValue.length)
+
+    expect(await state.put(testKey2, testValue2)).toEqual(testKey2)
+
+    expect(await state.any()).toEqual(true)
+    const stats2 = await state.stats()
+    expect(stats2).toBeDefined()
+    expect(stats2.keys).toBeGreaterThanOrEqual(2)
+    expect(stats2.bytesKeys).toBeGreaterThanOrEqual(testKey.length + testKey2.length)
+    expect(stats2.bytesValues).toBeGreaterThanOrEqual(testValue.length + testValue2.length)
+
     expect(await state.delete(testKey)).toEqual(testKey)
     expect(await state.get(testKey)).toEqual(undefined)
-    expect(await state.any()).toEqual(false)
-    expect(await state.put(testKey, testValue)).toEqual(testKey)
-    expect(await state.put(testKey2, testValue)).toEqual(testKey2)
-    expect(await state.any()).toEqual(true)
-    expect(await state.stats()).toEqual({ bytesKeys: testKey.length + testKey2.length, bytesValues: testValue.length * 2, keys: 2 })
-    expect(await state.deleteAll()).toEqual(true)
-    expect(await state.get(testKey)).toEqual(undefined)
-    expect(await state.any()).toEqual(false)
-    expect(await state.stats()).toEqual(false)
+    expect(await state.delete(testKey2)).toEqual(testKey2)
+    expect(await state.get(testKey2)).toEqual(undefined)
+
+    // note we can't test any, stats for empty container and deleteAll in isolation
   })
 
   test('time-to-live tests: write w/o ttl, get default ttl, write with ttl, get, get after ttl', async () => {
@@ -128,13 +145,12 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
   test('listKeys test: few < 128 keys, many, and expired entries', async () => {
     const state = await initStateEnv()
-    await state.deleteAll() // cleanup
 
     const genKeyStrings = (n) => {
       return (new Array(n).fill(0).map((_, idx) => {
         const char = String.fromCharCode(97 + idx % 26)
         // list-[a-z]-[0-(N-1)]
-        return `list-${char}-${idx}`
+        return `${uniquePrefix}__list_${char}_${idx}`
       }))
     }
     const putKeys = async (keys, ttl) => {
@@ -156,54 +172,61 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     const keys90 = genKeyStrings(90).sort()
     await putKeys(keys90, 60)
 
-    let it = state.list()
-    let ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual(keys90)
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    let it, ret
 
-    it = state.list({ match: 'list-*' })
+    // note: when listing all we are not in isolation
+    it = state.list()
+    ret = await it.next()
+    expect(ret.value.keys.length).toBeGreaterThanOrEqual(90)
+
+    it = state.list({ match: `${uniquePrefix}__list_*` })
     ret = await it.next()
     expect(ret.value.keys.sort()).toEqual(keys90)
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
-    it = state.list({ match: 'list-a*' })
+    it = state.list({ match: `${uniquePrefix}__list_a*` })
     ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual(['list-a-0', 'list-a-26', 'list-a-52', 'list-a-78'])
+    expect(ret.value.keys.sort()).toEqual([
+      `${uniquePrefix}__list_a_0`,
+      `${uniquePrefix}__list_a_26`,
+      `${uniquePrefix}__list_a_52`,
+      `${uniquePrefix}__list_a_78`
+    ])
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
-    it = state.list({ match: 'list-*-1' })
+    it = state.list({ match: `${uniquePrefix}__list_*_1` })
     ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual(['list-b-1'])
+    expect(ret.value.keys.sort()).toEqual([`${uniquePrefix}__list_b_1`])
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
     // 2. test with many elements and large countHint
     const keys900 = genKeyStrings(900)
     await putKeys(keys900, 60)
 
+    // note: we can't list in isolation without prefix
     it = state.list({ countHint: 1000 })
     ret = await it.next()
-    expect(ret.value.keys.length).toEqual(900)
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    expect(ret.value.keys.length).toBeGreaterThanOrEqual(900)
 
-    it = state.list({ countHint: 1000, match: 'list-*' })
+    it = state.list({ countHint: 1000, match: `${uniquePrefix}__li*t_*` })
     ret = await it.next()
     expect(ret.value.keys.length).toEqual(900)
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
-    it = state.list({ countHint: 1000, match: 'list-z*' })
+    it = state.list({ countHint: 1000, match: `${uniquePrefix}__list_z*` })
     ret = await it.next()
     expect(ret.value.keys.length).toEqual(34)
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
-    it = state.list({ match: 'list-*-1' })
+    it = state.list({ match: `${uniquePrefix}__list_*_1` })
     ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual(['list-b-1'])
+    expect(ret.value.keys.sort()).toEqual([`${uniquePrefix}__list_b_1`])
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
     // 3. test with many elements while iterating
     let iterations = 0
     let retArray = []
-    for await (const { keys } of state.list()) {
+    for await (const { keys } of state.list({ match: `${uniquePrefix}__l*st_*` })) {
       iterations++
       retArray.push(...keys)
     }
@@ -212,16 +235,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
     iterations = 0
     retArray = []
-    for await (const { keys } of state.list({ match: 'list-*' })) {
-      iterations++
-      retArray.push(...keys)
-    }
-    expect(iterations).toBeGreaterThan(5) // should be around 9-10
-    expect(retArray.length).toEqual(900)
-
-    iterations = 0
-    retArray = []
-    for await (const { keys } of state.list({ match: 'list-z*' })) {
+    for await (const { keys } of state.list({ match: `${uniquePrefix}__list_z*` })) {
       iterations++
       retArray.push(...keys)
     }
@@ -230,7 +244,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
     iterations = 0
     retArray = []
-    for await (const { keys } of state.list({ match: 'list-*-1' })) {
+    for await (const { keys } of state.list({ match: `${uniquePrefix}__list_*_1` })) {
       iterations++
       retArray.push(...keys)
     }
@@ -241,12 +255,10 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     await putKeys(keys90, 1)
     await waitFor(2000)
 
-    it = state.list({ countHint: 1000 })
+    it = state.list({ countHint: 1000, match: `${uniquePrefix}__list_*` })
     ret = await it.next()
     expect(ret.value.keys.length).toEqual(810) // 900 - 90
     expect(await it.next()).toEqual({ done: true, value: undefined })
-
-    await state.deleteAll()
   })
 
   test('throw error when get/put with invalid keys', async () => {
