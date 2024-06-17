@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-/* ************* NOTE 1: these tests must be run sequentially, using --runInBand ************* */
+/* ************* NOTE 1: these tests must be able to run concurrently across multiple instances ************* */
 /* ************* NOTE 2: requires env vars TEST_AUTH_1, TEST_NS_1 and TEST_AUTH_2, TEST_NS_2 for 2 different namespaces. ************* */
 
 const path = require('node:path')
