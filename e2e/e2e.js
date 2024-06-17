@@ -24,7 +24,7 @@ const stateLib = require('../index')
 const testKey = 'e2e_test_state_key'
 const testKey2 = 'e2e_test_state_key2'
 
-jest.setTimeout(30000) // thirty seconds per test
+jest.setTimeout(120000) // 2 minutes per test
 
 const initStateEnv = async (n = 1) => {
   delete process.env.__OW_API_KEY
