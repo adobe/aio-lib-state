@@ -6,6 +6,14 @@
 </dd>
 </dl>
 
+## Members
+
+<dl>
+<dt><a href="#MAX_TTL_SECONDS">MAX_TTL_SECONDS</a> : <code>number</code></dt>
+<dd><p>Max supported TTL, 365 days in seconds</p>
+</dd>
+</dl>
+
 ## Functions
 
 <dl>
@@ -159,6 +167,12 @@ for await (const { keys } of state.list({ match: 'abc*' })) {
    console.log(keys)
  }
 ```
+<a name="MAX_TTL_SECONDS"></a>
+
+## MAX\_TTL\_SECONDS : <code>number</code>
+Max supported TTL, 365 days in seconds
+
+**Kind**: global variable  
 <a name="validate"></a>
 
 ## validate(schema, data) ⇒ <code>object</code>

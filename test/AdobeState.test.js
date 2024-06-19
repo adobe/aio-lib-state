@@ -16,7 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
-const { ALLOWED_REGIONS, HEADER_KEY_EXPIRES } = require('../lib/constants')
+const { ALLOWED_REGIONS, HEADER_KEY_EXPIRES, MAX_TTL_SECONDS } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -200,10 +200,21 @@ describe('put', () => {
     await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
   })
 
+  test('failure (invalid ttl)', async () => {
+    const key = 'key'
+    const value = 'some-value'
+
+    await expect(store.put(key, value, { ttl: 'string' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /ttl must be integer')
+    await expect(store.put(key, value, { ttl: 1.1 })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /ttl must be integer')
+
+    await expect(store.put(key, value, { ttl: MAX_TTL_SECONDS + 1 })).rejects.toThrow('ttl must be <= 365 days (31536000s). Infinite TTLs (< 0) are not supported.')
+    await expect(store.put(key, value, { ttl: -1 })).rejects.toThrow('ttl must be <= 365 days (31536000s). Infinite TTLs (< 0) are not supported.')
+  })
+
   test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
-
+    // NOTE: the server supports binary values, so way want to revisit this eventually
     await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /value must be string')
   })
 
