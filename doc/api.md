@@ -12,6 +12,9 @@
 <dt><a href="#validate">validate(schema, data)</a> ⇒ <code>object</code></dt>
 <dd><p>Validates json according to a schema.</p>
 </dd>
+<dt><a href="#handleResponse">handleResponse(response, params)</a> ⇒ <code>void</code></dt>
+<dd><p>Handle a network response.</p>
+</dd>
 <dt><a href="#init">init([config])</a> ⇒ <code><a href="#AdobeState">Promise.&lt;AdobeState&gt;</a></code></dt>
 <dd><p>Initializes and returns the key-value-store SDK.</p>
 <p>To use the SDK you must either provide your
@@ -52,12 +55,27 @@ Cloud State Management
 **Kind**: global abstract class  
 
 * *[AdobeState](#AdobeState)*
+    * *[.getRegionalEndpoint(endpoint, region)](#AdobeState+getRegionalEndpoint) ⇒ <code>string</code>*
     * *[.get(key)](#AdobeState+get) ⇒ [<code>Promise.&lt;AdobeStateGetReturnValue&gt;</code>](#AdobeStateGetReturnValue)*
     * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.deleteAll()](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
+    * *[.list(options)](#AdobeState+list) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
+
+<a name="AdobeState+getRegionalEndpoint"></a>
+
+### *adobeState.getRegionalEndpoint(endpoint, region) ⇒ <code>string</code>*
+Gets the regional endpoint for an endpoint.
+
+**Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
+**Returns**: <code>string</code> - the endpoint, with the correct region  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| endpoint | <code>string</code> | the endpoint to test |
+| region | <code>string</code> | the region to set |
 
 <a name="AdobeState+get"></a>
 
@@ -92,7 +110,7 @@ Creates or updates a state key-value pair
 Deletes a state key-value pair
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exists  
+**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exist  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -119,6 +137,28 @@ Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code> - namespace stats or false if not exists  
+<a name="AdobeState+list"></a>
+
+### *adobeState.list(options) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
+List keys, returns an iterator. Every iteration returns a batch of
+approximately `countHint` keys.
+
+**Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
+**Returns**: <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code> - an async generator which yields a
+  { keys } object at every iteration.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | list options |
+| options.match | <code>string</code> | a glob pattern that supports '*' to filter   keys. |
+| options.countHint | <code>number</code> | an approximate number on how many items   to return per iteration. Default: 100, min: 10, max: 1000. |
+
+**Example**  
+```js
+for await (const { keys } of state.list({ match: 'abc*' })) {
+   console.log(keys)
+ }
+```
 <a name="validate"></a>
 
 ## validate(schema, data) ⇒ <code>object</code>
@@ -131,6 +171,18 @@ Validates json according to a schema.
 | --- | --- | --- |
 | schema | <code>object</code> | the AJV schema |
 | data | <code>object</code> | the json data to test |
+
+<a name="handleResponse"></a>
+
+## handleResponse(response, params) ⇒ <code>void</code>
+Handle a network response.
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| response | <code>Response</code> | a fetch Response |
+| params | <code>object</code> | the params to the network call |
 
 <a name="init"></a>
 

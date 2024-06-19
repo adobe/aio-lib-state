@@ -38,9 +38,23 @@ export type AdobeStateGetReturnValue = {
 export function validate(schema: any, data: any): any;
 
 /**
+ * Handle a network response.
+ * @param response - a fetch Response
+ * @param params - the params to the network call
+ */
+export function handleResponse(response: Response, params: any): void;
+
+/**
  * Cloud State Management
  */
 export class AdobeState {
+    /**
+     * Gets the regional endpoint for an endpoint.
+     * @param endpoint - the endpoint to test
+     * @param region - the region to set
+     * @returns the endpoint, with the correct region
+     */
+    getRegionalEndpoint(endpoint: string, region: string): string;
     /**
      * Retrieves the state value for given key.
      * If the key doesn't exist returns undefined.
@@ -59,7 +73,7 @@ export class AdobeState {
     /**
      * Deletes a state key-value pair
      * @param key - state key identifier
-     * @returns key of deleted state or `null` if state does not exists
+     * @returns key of deleted state or `null` if state does not exist
      */
     delete(key: string): Promise<string>;
     /**
@@ -77,6 +91,25 @@ export class AdobeState {
      * @returns namespace stats or false if not exists
      */
     stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; } | boolean>;
+    /**
+     * List keys, returns an iterator. Every iteration returns a batch of
+     * approximately `countHint` keys.
+     * @example
+     * for await (const { keys } of state.list({ match: 'abc*' })) {
+     *    console.log(keys)
+     *  }
+     * @param options - list options
+     * @param options.match - a glob pattern that supports '*' to filter
+     *   keys.
+     * @param options.countHint - an approximate number on how many items
+     *   to return per iteration. Default: 100, min: 10, max: 1000.
+     * @returns an async generator which yields a
+     *   { keys } object at every iteration.
+     */
+    list(options: {
+        match: string;
+        countHint: number;
+    }): AsyncGenerator<{ keys: string[]; }>;
 }
 
 /**

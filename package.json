@@ -17,6 +17,9 @@
     "typings": "jsdoc -t node_modules/tsd-jsdoc/dist -r lib -d . && replace-in-file /declare/g export types.d.ts --isRegex",
     "generate-docs": "npm run jsdoc && npm run typings"
   },
+  "pre-commit": [
+    "generate-docs"
+  ],
   "author": "Adobe Inc.",
   "license": "Apache-2.0",
   "engines": {
@@ -47,6 +50,7 @@
     "eslint-plugin-promise": "^6",
     "jest": "^29",
     "jsdoc-to-markdown": "^8.0.0",
+    "pre-commit": "^1.2.2",
     "replace-in-file": "^7.0.1",
     "stdout-stderr": "^0.1.13",
     "tsd-jsdoc": "^2.4.0"
