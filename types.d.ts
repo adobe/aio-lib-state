@@ -12,8 +12,8 @@ export type AdobeStateCredentials = {
 
 /**
  * AdobeState put options
- * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A
- * value of 0 sets default.
+ * @property ttl - Time-To-Live for key-value pair in seconds, defaults
+ *   to 24 hours (86400s). Max TTL is one year (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`.
  */
 export type AdobeStatePutOptions = {
     ttl: number;
@@ -28,21 +28,6 @@ export type AdobeStateGetReturnValue = {
     expiration: string;
     value: string;
 };
-
-/**
- * Validates json according to a schema.
- * @param schema - the AJV schema
- * @param data - the json data to test
- * @returns the result
- */
-export function validate(schema: any, data: any): any;
-
-/**
- * Handle a network response.
- * @param response - a fetch Response
- * @param params - the params to the network call
- */
-export function handleResponse(response: Response, params: any): void;
 
 /**
  * Cloud State Management
