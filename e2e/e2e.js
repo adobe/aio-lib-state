@@ -104,10 +104,12 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
     expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
-    // 2. test ttl = 0
+    // 2. test ttl = 0 (should default to default ttl of 1 day)
     expect(await state.put(testKey, testValue, { ttl: 0 })).toEqual(testKey)
     res = await state.get(testKey)
-    expect(res).toBe(undefined)
+    resTime = new Date(res.expiration).getTime()
+    expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
+    expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
     // 3. test max ttl
     const nowPlus365Days = new Date(MAX_TTL_SECONDS).getTime()

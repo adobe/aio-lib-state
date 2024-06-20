@@ -12,8 +12,10 @@ export type AdobeStateCredentials = {
 
 /**
  * AdobeState put options
- * @property ttl - Time-To-Live for key-value pair in seconds, defaults
- *   to 24 hours (86400s). Max TTL is one year (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`.
+ * @property ttl - Time-To-Live for key-value pair in seconds. When not
+ *   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year
+ *   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults
+ *   to 24 hours.
  */
 export type AdobeStatePutOptions = {
     ttl: number;

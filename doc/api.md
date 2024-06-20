@@ -210,7 +210,7 @@ AdobeState put options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ttl | <code>number</code> | Time-To-Live for key-value pair in seconds, defaults   to 24 hours (86400s). Max TTL is one year (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. |
+| ttl | <code>number</code> | Time-To-Live for key-value pair in seconds. When not   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults   to 24 hours. |
 
 <a name="AdobeStateGetReturnValue"></a>
 
