@@ -104,19 +104,17 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
     expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
 
-    // 2. test ttl = 0 (should default to default ttl of 1 day)
+    // 2. test ttl = 0
     expect(await state.put(testKey, testValue, { ttl: 0 })).toEqual(testKey)
     res = await state.get(testKey)
-    resTime = new Date(res.expiration).getTime()
-    expect(resTime).toBeLessThanOrEqual(new Date(Date.now() + 86400000).getTime()) // 86400000 ms = 1 day
-    expect(resTime).toBeGreaterThanOrEqual(new Date(Date.now() + 86400000 - 10000).getTime()) // give more or less 10 seconds clock skew + request time
+    expect(res).toBe(undefined)
 
     // 3. test max ttl
     const nowPlus365Days = new Date(MAX_TTL_SECONDS).getTime()
-    expect(await state.put(testKey, testValue, { ttl: -1 })).toEqual(testKey)
+    expect(await state.put(testKey, testValue, { ttl: MAX_TTL_SECONDS })).toEqual(testKey)
     res = await state.get(testKey)
     resTime = new Date(res.expiration).getTime()
-    expect(resTime).toBeGreaterThanOrEqual(nowPlus365Days)
+    expect(resTime).toBeGreaterThanOrEqual(nowPlus365Days - 10000)
 
     // 4. test that after ttl object is deleted
     expect(await state.put(testKey, testValue, { ttl: 2 })).toEqual(testKey)
@@ -124,6 +122,9 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(new Date(res.expiration).getTime()).toBeLessThanOrEqual(new Date(Date.now() + 2000).getTime())
     await waitFor(3000) // give it one more sec - ttl is not so precise
     expect(await state.get(testKey)).toEqual(undefined)
+
+    // 5. infinite ttl not supported
+    await expect(state.put(testKey, testValue, { ttl: -1 })).rejects.toThrow()
   })
 
   test('listKeys test: few < 128 keys, many, and expired entries', async () => {
