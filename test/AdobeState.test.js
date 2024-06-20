@@ -547,7 +547,7 @@ describe('private methods', () => {
     })
 
     test('no params, region set', async () => {
-      const region = 'apac'
+      const region = 'emea'
       const env = PROD_ENV
       mockCLIEnv.mockReturnValue(env)
 
@@ -564,7 +564,7 @@ describe('private methods', () => {
       mockCLIEnv.mockReturnValue(env)
 
       await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
-        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, apac, emea')
+        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea')
     })
   })
 
@@ -608,7 +608,7 @@ describe('private methods', () => {
     jest.resetModules()
     process.env.AIO_STATE_ENDPOINT = 'https://custom.abc.com'
     const env = STAGE_ENV
-    const region = 'apac'
+    const region = 'amer'
     mockCLIEnv.mockReturnValue(env)
 
     // need to instantiate a new store, when env changes
