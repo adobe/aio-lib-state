@@ -15,10 +15,12 @@
     "e2e": "jest -c jest.e2e.config.js",
     "jsdoc": "jsdoc2md -f index.js 'lib/**/*.js' > doc/api.md",
     "typings": "jsdoc -t node_modules/tsd-jsdoc/dist -r lib -d . && replace-in-file /declare/g export types.d.ts --isRegex",
-    "generate-docs": "npm run jsdoc && npm run typings"
+    "generate-docs": "npm run jsdoc && npm run typings",
+    "git-add-docs": "git add doc/ types.d.ts"
   },
   "pre-commit": [
-    "generate-docs"
+    "generate-docs",
+    "git-add-docs"
   ],
   "author": "Adobe Inc.",
   "license": "Apache-2.0",
