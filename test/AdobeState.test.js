@@ -16,7 +16,7 @@ const { HttpExponentialBackoff } = require('@adobe/aio-lib-core-networking')
 const { AdobeState } = require('../lib/AdobeState')
 const querystring = require('node:querystring')
 const { Buffer } = require('node:buffer')
-const { ALLOWED_REGIONS, HEADER_KEY_EXPIRES } = require('../lib/constants')
+const { ALLOWED_REGIONS, HEADER_KEY_EXPIRES, MAX_TTL_SECONDS } = require('../lib/constants')
 
 // constants //////////////////////////////////////////////////////////
 
@@ -146,12 +146,19 @@ describe('get', () => {
     expect(value).toEqual(fetchBody)
     expect(typeof expiration).toEqual('string')
     expect(expiration).toEqual(new Date(Number(expiryHeaderValue)).toISOString())
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key',
+        expect.objectContaining({ method: 'GET' })
+      )
   })
 
   test('invalid key', async () => {
     const key = 'bad/key'
 
     await expect(store.get(key)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
   })
 
   test('not found', async () => {
@@ -180,6 +187,27 @@ describe('put', () => {
 
     const returnKey = await store.put(key, value)
     expect(returnKey).toEqual(key)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key',
+        expect.objectContaining({ method: 'PUT' })
+      )
+  })
+
+  test('success (string value) ttl = 0', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+    const fetchResponseJson = {}
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const returnKey = await store.put(key, value, { ttl: 0 })
+    expect(returnKey).toEqual(key)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key?ttl=0',
+        expect.any(Object)
+      )
   })
 
   test('success (string value) with ttl', async () => {
@@ -191,6 +219,11 @@ describe('put', () => {
 
     const returnKey = await store.put(key, value, { ttl: 999 })
     expect(returnKey).toEqual(key)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid.for-those_chars?ttl=999',
+        expect.any(Object)
+      )
   })
 
   test('failure (invalid key)', async () => {
@@ -198,13 +231,29 @@ describe('put', () => {
     const value = 'some-value'
 
     await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
+  })
+
+  test('failure (invalid ttl)', async () => {
+    const key = 'key'
+    const value = 'some-value'
+
+    await expect(store.put(key, value, { ttl: 'string' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /ttl must be integer')
+    await expect(store.put(key, value, { ttl: 1.1 })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /ttl must be integer')
+
+    await expect(store.put(key, value, { ttl: MAX_TTL_SECONDS + 1 })).rejects.toThrow('ttl must be <= 365 days (31536000s). Infinite TTLs (< 0) are not supported.')
+    await expect(store.put(key, value, { ttl: -1 })).rejects.toThrow('ttl must be <= 365 days (31536000s). Infinite TTLs (< 0) are not supported.')
+
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
   })
 
   test('failure (binary value)', async () => {
     const key = 'valid-key'
     const value = Buffer.from([0x61, 0x72, 0x65, 0x26, 0x35, 0x55, 0xff])
-
+    // NOTE: the server supports binary values, so way want to revisit this eventually
     await expect(store.put(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /value must be string')
+
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
   })
 
   test('coverage: 401 error', async () => {
@@ -303,6 +352,12 @@ describe('delete', () => {
 
     const returnKey = await store.delete(key)
     expect(returnKey).toEqual(key)
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key',
+        expect.objectContaining({ method: 'DELETE' })
+      )
   })
 
   test('not found', async () => {
@@ -328,6 +383,12 @@ describe('deleteAll', () => {
 
     const value = await store.deleteAll()
     expect(value).toEqual(true)
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace',
+        expect.objectContaining({ method: 'DELETE' })
+      )
   })
 
   test('not found', async () => {
@@ -351,6 +412,12 @@ describe('stats()', () => {
 
     const value = await store.stats()
     expect(value).toEqual({})
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace',
+        expect.objectContaining({ method: 'GET' })
+      )
   })
 
   test('not found', async () => {
@@ -401,12 +468,27 @@ describe('list()', () => {
     expect(await it.next()).toEqual({ done: false, value: { keys: ['a', 'b', 'c'] } })
     expect(await it.next()).toEqual({ done: true, value: undefined })
 
+    expect(mockExponentialBackoff).toHaveBeenCalledTimes(1)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?cursor=0',
+        expect.objectContaining({ method: 'GET' })
+      )
+
+    mockExponentialBackoff.mockClear()
     let iters = 0
     for await (const { keys } of store.list()) {
       ++iters
       expect(keys).toStrictEqual(['a', 'b', 'c'])
     }
     expect(iters).toBe(1)
+
+    expect(mockExponentialBackoff).toHaveBeenCalledTimes(1)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?cursor=0',
+        expect.objectContaining({ method: 'GET' })
+      )
   })
 
   test('list 3 iterations', async () => {
@@ -431,6 +513,18 @@ describe('list()', () => {
       allKeys.push(...keys)
     }
     expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+
+    expect(mockExponentialBackoff).toHaveBeenCalledTimes(3)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?cursor=0',
+        expect.objectContaining({ method: 'GET' })
+      )
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?cursor=2',
+        expect.objectContaining({ method: 'GET' })
+      )
   })
 
   test('list 3 iterations with pattern and countHint', async () => {
@@ -452,10 +546,22 @@ describe('list()', () => {
 
     const allKeys = []
     // no pattern matching is happening on the client, we just check that the pattern is in a valid format
-    for await (const { keys } of store.list({ pattern: 'valid*', countHint: 1000 })) {
+    for await (const { keys } of store.list({ match: 'valid*', countHint: 1000 })) {
       allKeys.push(...keys)
     }
     expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+
+    expect(mockExponentialBackoff).toHaveBeenCalledTimes(3)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&countHint=1000&cursor=0',
+        expect.objectContaining({ method: 'GET' })
+      )
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&countHint=1000&cursor=2',
+        expect.objectContaining({ method: 'GET' })
+      )
   })
 })
 
@@ -472,6 +578,12 @@ describe('any', () => {
 
     const value = await store.any()
     expect(value).toEqual(true)
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace',
+        expect.objectContaining({ method: 'HEAD' })
+      )
   })
 
   test('not found', async () => {
@@ -547,7 +659,7 @@ describe('private methods', () => {
     })
 
     test('no params, region set', async () => {
-      const region = 'apac'
+      const region = 'emea'
       const env = PROD_ENV
       mockCLIEnv.mockReturnValue(env)
 
@@ -564,7 +676,7 @@ describe('private methods', () => {
       mockCLIEnv.mockReturnValue(env)
 
       await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
-        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, apac, emea')
+        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea')
     })
   })
 
@@ -608,7 +720,7 @@ describe('private methods', () => {
     jest.resetModules()
     process.env.AIO_STATE_ENDPOINT = 'https://custom.abc.com'
     const env = STAGE_ENV
-    const region = 'apac'
+    const region = 'amer'
     mockCLIEnv.mockReturnValue(env)
 
     // need to instantiate a new store, when env changes

@@ -12,8 +12,10 @@ export type AdobeStateCredentials = {
 
 /**
  * AdobeState put options
- * @property ttl - time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A
- * value of 0 sets default.
+ * @property ttl - Time-To-Live for key-value pair in seconds. When not
+ *   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year
+ *   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults
+ *   to 24 hours.
  */
 export type AdobeStatePutOptions = {
     ttl: number;
@@ -30,17 +32,16 @@ export type AdobeStateGetReturnValue = {
 };
 
 /**
- * Validates json according to a schema.
- * @param schema - the AJV schema
- * @param data - the json data to test
- * @returns the result
- */
-export function validate(schema: any, data: any): any;
-
-/**
  * Cloud State Management
  */
 export class AdobeState {
+    /**
+     * Gets the regional endpoint for an endpoint.
+     * @param endpoint - the endpoint to test
+     * @param region - the region to set
+     * @returns the endpoint, with the correct region
+     */
+    getRegionalEndpoint(endpoint: string, region: string): string;
     /**
      * Retrieves the state value for given key.
      * If the key doesn't exist returns undefined.
@@ -59,7 +60,7 @@ export class AdobeState {
     /**
      * Deletes a state key-value pair
      * @param key - state key identifier
-     * @returns key of deleted state or `null` if state does not exists
+     * @returns key of deleted state or `null` if state does not exist
      */
     delete(key: string): Promise<string>;
     /**
@@ -77,6 +78,25 @@ export class AdobeState {
      * @returns namespace stats or false if not exists
      */
     stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; } | boolean>;
+    /**
+     * List keys, returns an iterator. Every iteration returns a batch of
+     * approximately `countHint` keys.
+     * @example
+     * for await (const { keys } of state.list({ match: 'abc*' })) {
+     *    console.log(keys)
+     *  }
+     * @param options - list options
+     * @param options.match - a glob pattern that supports '*' to filter
+     *   keys.
+     * @param options.countHint - an approximate number on how many items
+     *   to return per iteration. Default: 100, min: 10, max: 1000.
+     * @returns an async generator which yields a
+     *   { keys } object at every iteration.
+     */
+    list(options: {
+        match: string;
+        countHint: number;
+    }): AsyncGenerator<{ keys: string[]; }>;
 }
 
 /**

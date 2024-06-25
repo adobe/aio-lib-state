@@ -6,12 +6,17 @@
 </dd>
 </dl>
 
+## Members
+
+<dl>
+<dt><a href="#MAX_TTL">MAX_TTL</a> : <code>number</code></dt>
+<dd><p>Max supported TTL, 365 days in seconds</p>
+</dd>
+</dl>
+
 ## Functions
 
 <dl>
-<dt><a href="#validate">validate(schema, data)</a> ⇒ <code>object</code></dt>
-<dd><p>Validates json according to a schema.</p>
-</dd>
 <dt><a href="#init">init([config])</a> ⇒ <code><a href="#AdobeState">Promise.&lt;AdobeState&gt;</a></code></dt>
 <dd><p>Initializes and returns the key-value-store SDK.</p>
 <p>To use the SDK you must either provide your
@@ -52,12 +57,27 @@ Cloud State Management
 **Kind**: global abstract class  
 
 * *[AdobeState](#AdobeState)*
+    * *[.getRegionalEndpoint(endpoint, region)](#AdobeState+getRegionalEndpoint) ⇒ <code>string</code>*
     * *[.get(key)](#AdobeState+get) ⇒ [<code>Promise.&lt;AdobeStateGetReturnValue&gt;</code>](#AdobeStateGetReturnValue)*
     * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.deleteAll()](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
     * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
+    * *[.list(options)](#AdobeState+list) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
+
+<a name="AdobeState+getRegionalEndpoint"></a>
+
+### *adobeState.getRegionalEndpoint(endpoint, region) ⇒ <code>string</code>*
+Gets the regional endpoint for an endpoint.
+
+**Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
+**Returns**: <code>string</code> - the endpoint, with the correct region  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| endpoint | <code>string</code> | the endpoint to test |
+| region | <code>string</code> | the region to set |
 
 <a name="AdobeState+get"></a>
 
@@ -92,7 +112,7 @@ Creates or updates a state key-value pair
 Deletes a state key-value pair
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exists  
+**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exist  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -119,19 +139,34 @@ Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code> - namespace stats or false if not exists  
-<a name="validate"></a>
+<a name="AdobeState+list"></a>
 
-## validate(schema, data) ⇒ <code>object</code>
-Validates json according to a schema.
+### *adobeState.list(options) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
+List keys, returns an iterator. Every iteration returns a batch of
+approximately `countHint` keys.
 
-**Kind**: global function  
-**Returns**: <code>object</code> - the result  
+**Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
+**Returns**: <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code> - an async generator which yields a
+  { keys } object at every iteration.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| schema | <code>object</code> | the AJV schema |
-| data | <code>object</code> | the json data to test |
+| options | <code>object</code> | list options |
+| options.match | <code>string</code> | a glob pattern that supports '*' to filter   keys. |
+| options.countHint | <code>number</code> | an approximate number on how many items   to return per iteration. Default: 100, min: 10, max: 1000. |
 
+**Example**  
+```js
+for await (const { keys } of state.list({ match: 'abc*' })) {
+   console.log(keys)
+ }
+```
+<a name="MAX_TTL"></a>
+
+## MAX\_TTL : <code>number</code>
+Max supported TTL, 365 days in seconds
+
+**Kind**: global variable  
 <a name="init"></a>
 
 ## init([config]) ⇒ [<code>Promise.&lt;AdobeState&gt;</code>](#AdobeState)
@@ -175,7 +210,7 @@ AdobeState put options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A value of 0 sets default. |
+| ttl | <code>number</code> | Time-To-Live for key-value pair in seconds. When not   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults   to 24 hours. |
 
 <a name="AdobeStateGetReturnValue"></a>
 
