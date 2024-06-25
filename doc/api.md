@@ -6,15 +6,17 @@
 </dd>
 </dl>
 
+## Members
+
+<dl>
+<dt><a href="#MAX_TTL">MAX_TTL</a> : <code>number</code></dt>
+<dd><p>Max supported TTL, 365 days in seconds</p>
+</dd>
+</dl>
+
 ## Functions
 
 <dl>
-<dt><a href="#validate">validate(schema, data)</a> ⇒ <code>object</code></dt>
-<dd><p>Validates json according to a schema.</p>
-</dd>
-<dt><a href="#handleResponse">handleResponse(response, params)</a> ⇒ <code>void</code></dt>
-<dd><p>Handle a network response.</p>
-</dd>
 <dt><a href="#init">init([config])</a> ⇒ <code><a href="#AdobeState">Promise.&lt;AdobeState&gt;</a></code></dt>
 <dd><p>Initializes and returns the key-value-store SDK.</p>
 <p>To use the SDK you must either provide your
@@ -159,31 +161,12 @@ for await (const { keys } of state.list({ match: 'abc*' })) {
    console.log(keys)
  }
 ```
-<a name="validate"></a>
+<a name="MAX_TTL"></a>
 
-## validate(schema, data) ⇒ <code>object</code>
-Validates json according to a schema.
+## MAX\_TTL : <code>number</code>
+Max supported TTL, 365 days in seconds
 
-**Kind**: global function  
-**Returns**: <code>object</code> - the result  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| schema | <code>object</code> | the AJV schema |
-| data | <code>object</code> | the json data to test |
-
-<a name="handleResponse"></a>
-
-## handleResponse(response, params) ⇒ <code>void</code>
-Handle a network response.
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| response | <code>Response</code> | a fetch Response |
-| params | <code>object</code> | the params to the network call |
-
+**Kind**: global variable  
 <a name="init"></a>
 
 ## init([config]) ⇒ [<code>Promise.&lt;AdobeState&gt;</code>](#AdobeState)
@@ -227,7 +210,7 @@ AdobeState put options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| ttl | <code>number</code> | time-to-live for key-value pair in seconds, defaults to 24 hours (86400s). Set to < 0 for max ttl of one year. A value of 0 sets default. |
+| ttl | <code>number</code> | Time-To-Live for key-value pair in seconds. When not   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults   to 24 hours. |
 
 <a name="AdobeStateGetReturnValue"></a>
 
