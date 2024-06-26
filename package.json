@@ -45,7 +45,7 @@
     "eslint": "^8",
     "eslint-config-standard": "^17",
     "eslint-plugin-import": "^2",
-    "eslint-plugin-jest": "^27",
+    "eslint-plugin-jest": "^28",
     "eslint-plugin-jsdoc": "^48",
     "eslint-plugin-n": "^16.4",
     "eslint-plugin-node": "^11",
