@@ -401,12 +401,12 @@ describe('deleteAll', () => {
     const fetchResponseJson = JSON.stringify({ keys: 10 })
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
 
-    const value = await store.deleteAll({ match: 'some.patter*' })
+    const value = await store.deleteAll({ match: 'some.patter-_*' })
     expect(value).toEqual({ keys: 10 })
 
     expect(mockExponentialBackoff)
       .toHaveBeenCalledWith(
-        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace?matchData=some.patter*',
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace?matchData=some.patter-_*',
         expect.objectContaining({ method: 'DELETE' })
       )
   })
