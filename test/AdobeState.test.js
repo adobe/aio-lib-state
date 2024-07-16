@@ -377,6 +377,12 @@ describe('deleteAll', () => {
     store = await AdobeState.init(fakeCredentials)
   })
 
+  test('invalid match option', async () => {
+    await expect(store.deleteAll({ match: ':isaninvalidchar' })).rejects.toThrow('/match must match pattern')
+    await expect(store.deleteAll({ match: '{isaninvalidchar' })).rejects.toThrow('/match must match pattern')
+    await expect(store.deleteAll({ match: '}isaninvalidchar' })).rejects.toThrow('/match must match pattern')
+  })
+
   test('success', async () => {
     const fetchResponseJson = JSON.stringify({ keys: 10 })
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
