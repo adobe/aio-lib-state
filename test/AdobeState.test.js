@@ -378,11 +378,11 @@ describe('deleteAll', () => {
   })
 
   test('success', async () => {
-    const fetchResponseJson = {}
+    const fetchResponseJson = JSON.stringify({ keys: 10 })
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
 
     const value = await store.deleteAll()
-    expect(value).toEqual(true)
+    expect(value).toEqual({ keys: 10 })
 
     expect(mockExponentialBackoff)
       .toHaveBeenCalledWith(
@@ -391,11 +391,25 @@ describe('deleteAll', () => {
       )
   })
 
+  test('success with match', async () => {
+    const fetchResponseJson = JSON.stringify({ keys: 10 })
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const value = await store.deleteAll({ match: 'some.patter*' })
+    expect(value).toEqual({ keys: 10 })
+
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace?matchData=some.patter*',
+        expect.objectContaining({ method: 'DELETE' })
+      )
+  })
+
   test('not found', async () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
 
     const value = await store.deleteAll()
-    expect(value).toEqual(false)
+    expect(value).toEqual(null)
   })
 })
 
@@ -424,7 +438,7 @@ describe('stats()', () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
 
     const value = await store.stats()
-    expect(value).toEqual(false)
+    expect(value).toEqual(null)
   })
 })
 
