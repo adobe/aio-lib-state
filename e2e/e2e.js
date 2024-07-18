@@ -262,13 +262,12 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(await it.next()).toEqual({ done: true, value: undefined })
   })
 
-  test('deleteAll with match test', async () => {
+  test('deleteAll test', async () => {
     const state = await initStateEnv()
 
+    // < 100 keys
     const keys90 = genKeyStrings(90, 'deleteAll').sort()
     await putKeys(state, keys90, 60)
-
-    // < 100 keys
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_a*` })).toEqual({ keys: 4 })
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_*` })).toEqual({ keys: 86 })
 

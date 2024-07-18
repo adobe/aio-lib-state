@@ -64,10 +64,13 @@ export class AdobeState {
      */
     delete(key: string): Promise<string | null>;
     /**
-     * Deletes all key-values.
+     * Deletes multiple key-values. The match option is required as a safeguard.
+     * CAUTION: use `{ match: '*' }` to delete all key-values.
+     * @example
+     * await state.deleteAll({ match: 'abc*' })
      * @param options - deleteAll options.
-     * @param options.match - only delete keys matching the glob pattern (supports '*').
-     * @returns returns an object with the number of deleted keys or `null` if there are no keys in the container.
+     * @param options.match - REQUIRED, a glob pattern to specify which keys to delete.
+     * @returns returns an object with the number of deleted keys or `null` if the container is empty.
      */
     deleteAll(options: {
         match: string;

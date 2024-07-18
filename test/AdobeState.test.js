@@ -344,6 +344,14 @@ describe('delete', () => {
     store = await AdobeState.init(fakeCredentials)
   })
 
+  test('failure (invalid key)', async () => {
+    const key = 'invalid/key'
+    const value = 'some-value'
+
+    await expect(store.delete(key, value)).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /key must match pattern "^[a-zA-Z0-9-_.]{1,1024}$"')
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
+  })
+
   test('success', async () => {
     const key = 'valid-key'
     const fetchResponseJson = {}
@@ -377,6 +385,10 @@ describe('deleteAll', () => {
     store = await AdobeState.init(fakeCredentials)
   })
 
+  test('safeguard: match option is required', async () => {
+    await expect(store.deleteAll()).rejects.toThrow('must have required properties: match')
+  })
+
   test('invalid match option', async () => {
     await expect(store.deleteAll({ match: ':isaninvalidchar' })).rejects.toThrow('/match must match pattern')
     await expect(store.deleteAll({ match: '{isaninvalidchar' })).rejects.toThrow('/match must match pattern')
@@ -387,26 +399,12 @@ describe('deleteAll', () => {
     const fetchResponseJson = JSON.stringify({ keys: 10 })
     mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
 
-    const value = await store.deleteAll()
+    const value = await store.deleteAll({ match: '*' })
     expect(value).toEqual({ keys: 10 })
 
     expect(mockExponentialBackoff)
       .toHaveBeenCalledWith(
-        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace',
-        expect.objectContaining({ method: 'DELETE' })
-      )
-  })
-
-  test('success with match', async () => {
-    const fetchResponseJson = JSON.stringify({ keys: 10 })
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
-
-    const value = await store.deleteAll({ match: 'some.patter-_*' })
-    expect(value).toEqual({ keys: 10 })
-
-    expect(mockExponentialBackoff)
-      .toHaveBeenCalledWith(
-        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace?matchData=some.patter-_*',
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace?matchData=*',
         expect.objectContaining({ method: 'DELETE' })
       )
   })
@@ -414,7 +412,7 @@ describe('deleteAll', () => {
   test('not found', async () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
 
-    const value = await store.deleteAll()
+    const value = await store.deleteAll({ match: '*' })
     expect(value).toEqual(null)
   })
 })

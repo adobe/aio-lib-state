@@ -121,16 +121,21 @@ Deletes a state key-value pair
 <a name="AdobeState+deleteAll"></a>
 
 ### *adobeState.deleteAll(options) ⇒ <code>Promise.&lt;({keys: number}\|null)&gt;</code>*
-Deletes all key-values.
+Deletes multiple key-values. The match option is required as a safeguard.
+CAUTION: use `{ match: '*' }` to delete all key-values.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;({keys: number}\|null)&gt;</code> - returns an object with the number of deleted keys or `null` if there are no keys in the container.  
+**Returns**: <code>Promise.&lt;({keys: number}\|null)&gt;</code> - returns an object with the number of deleted keys or `null` if the container is empty.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | options | <code>object</code> | deleteAll options. |
-| options.match | <code>string</code> | only delete keys matching the glob pattern (supports '*'). |
+| options.match | <code>string</code> | REQUIRED, a glob pattern to specify which keys to delete. |
 
+**Example**  
+```js
+await state.deleteAll({ match: 'abc*' })
+```
 <a name="AdobeState+any"></a>
 
 ### *adobeState.any() ⇒ <code>Promise.&lt;boolean&gt;</code>*
