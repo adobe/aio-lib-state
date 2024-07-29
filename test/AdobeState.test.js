@@ -413,7 +413,7 @@ describe('deleteAll', () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
 
     const value = await store.deleteAll({ match: '*' })
-    expect(value).toEqual(null)
+    expect(value).toEqual({ keys: 0 })
   })
 })
 
@@ -442,7 +442,7 @@ describe('stats()', () => {
     mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404))
 
     const value = await store.stats()
-    expect(value).toEqual(null)
+    expect(value).toEqual({ keys: 0, bytesValues: 0, bytesKeys: 0 })
   })
 })
 

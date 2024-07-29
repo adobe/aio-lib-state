@@ -61,9 +61,9 @@ Cloud State Management
     * *[.get(key)](#AdobeState+get) ⇒ [<code>Promise.&lt;AdobeStateGetReturnValue&gt;</code>](#AdobeStateGetReturnValue)*
     * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;string&gt;</code>*
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
-    * *[.deleteAll(options)](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;({keys: number}\|null)&gt;</code>*
+    * *[.deleteAll(options)](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;{keys: number}&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
-    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|null)&gt;</code>*
+    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code>*
     * *[.list(options)](#AdobeState+list) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
 
 <a name="AdobeState+getRegionalEndpoint"></a>
@@ -120,12 +120,12 @@ Deletes a state key-value pair
 
 <a name="AdobeState+deleteAll"></a>
 
-### *adobeState.deleteAll(options) ⇒ <code>Promise.&lt;({keys: number}\|null)&gt;</code>*
+### *adobeState.deleteAll(options) ⇒ <code>Promise.&lt;{keys: number}&gt;</code>*
 Deletes multiple key-values. The match option is required as a safeguard.
 CAUTION: use `{ match: '*' }` to delete all key-values.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;({keys: number}\|null)&gt;</code> - returns an object with the number of deleted keys or `null` if the container is empty.  
+**Returns**: <code>Promise.&lt;{keys: number}&gt;</code> - returns an object with the number of deleted keys.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -145,11 +145,11 @@ There exists key-values in the region.
 **Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  
 <a name="AdobeState+stats"></a>
 
-### *adobeState.stats() ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|null)&gt;</code>*
+### *adobeState.stats() ⇒ <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code>*
 Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|null)&gt;</code> - namespace stats or `null` if there are no keys in the container.  
+**Returns**: <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code> - State container stats.  
 <a name="AdobeState+list"></a>
 
 ### *adobeState.list(options) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
