@@ -70,11 +70,11 @@ export class AdobeState {
      * await state.deleteAll({ match: 'abc*' })
      * @param options - deleteAll options.
      * @param options.match - REQUIRED, a glob pattern to specify which keys to delete.
-     * @returns returns an object with the number of deleted keys or `null` if the container is empty.
+     * @returns returns an object with the number of deleted keys.
      */
     deleteAll(options: {
         match: string;
-    }): Promise<{ keys: number; } | null>;
+    }): Promise<{ keys: number; }>;
     /**
      * There exists key-values in the region.
      * @returns true if exists, false if not
@@ -82,9 +82,9 @@ export class AdobeState {
     any(): Promise<boolean>;
     /**
      * Get stats.
-     * @returns namespace stats or `null` if there are no keys in the container.
+     * @returns State container stats.
      */
-    stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; } | null>;
+    stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; }>;
     /**
      * List keys, returns an iterator. Every iteration returns a batch of
      * approximately `countHint` keys.
