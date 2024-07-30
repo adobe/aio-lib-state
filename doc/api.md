@@ -60,10 +60,10 @@ Cloud State Management
     * *[.getRegionalEndpoint(endpoint, region)](#AdobeState+getRegionalEndpoint) ⇒ <code>string</code>*
     * *[.get(key)](#AdobeState+get) ⇒ [<code>Promise.&lt;AdobeStateGetReturnValue&gt;</code>](#AdobeStateGetReturnValue)*
     * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;string&gt;</code>*
-    * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;string&gt;</code>*
-    * *[.deleteAll()](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;boolean&gt;</code>*
+    * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
+    * *[.deleteAll(options)](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;{keys: number}&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
-    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
+    * *[.stats()](#AdobeState+stats) ⇒ <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code>*
     * *[.list(options)](#AdobeState+list) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
 
 <a name="AdobeState+getRegionalEndpoint"></a>
@@ -108,11 +108,11 @@ Creates or updates a state key-value pair
 
 <a name="AdobeState+delete"></a>
 
-### *adobeState.delete(key) ⇒ <code>Promise.&lt;string&gt;</code>*
+### *adobeState.delete(key) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
 Deletes a state key-value pair
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;string&gt;</code> - key of deleted state or `null` if state does not exist  
+**Returns**: <code>Promise.&lt;(string\|null)&gt;</code> - key of deleted state or `null` if state does not exist  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -120,25 +120,36 @@ Deletes a state key-value pair
 
 <a name="AdobeState+deleteAll"></a>
 
-### *adobeState.deleteAll() ⇒ <code>Promise.&lt;boolean&gt;</code>*
-Deletes all key-values
+### *adobeState.deleteAll(options) ⇒ <code>Promise.&lt;{keys: number}&gt;</code>*
+Deletes multiple key-values. The match option is required as a safeguard.
+CAUTION: use `{ match: '*' }` to delete all key-values.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;boolean&gt;</code> - true if deleted, false if not  
+**Returns**: <code>Promise.&lt;{keys: number}&gt;</code> - returns an object with the number of deleted keys.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | deleteAll options. |
+| options.match | <code>string</code> | REQUIRED, a glob pattern to specify which keys to delete. |
+
+**Example**  
+```js
+await state.deleteAll({ match: 'abc*' })
+```
 <a name="AdobeState+any"></a>
 
 ### *adobeState.any() ⇒ <code>Promise.&lt;boolean&gt;</code>*
-There exists key-values.
+There exists key-values in the region.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>Promise.&lt;boolean&gt;</code> - true if exists, false if not  
 <a name="AdobeState+stats"></a>
 
-### *adobeState.stats() ⇒ <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code>*
+### *adobeState.stats() ⇒ <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code>*
 Get stats.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;({bytesKeys: number, bytesValues: number, keys: number}\|boolean)&gt;</code> - namespace stats or false if not exists  
+**Returns**: <code>Promise.&lt;{bytesKeys: number, bytesValues: number, keys: number}&gt;</code> - State container stats.  
 <a name="AdobeState+list"></a>
 
 ### *adobeState.list(options) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*

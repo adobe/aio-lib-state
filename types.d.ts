@@ -62,22 +62,29 @@ export class AdobeState {
      * @param key - state key identifier
      * @returns key of deleted state or `null` if state does not exist
      */
-    delete(key: string): Promise<string>;
+    delete(key: string): Promise<string | null>;
     /**
-     * Deletes all key-values
-     * @returns true if deleted, false if not
+     * Deletes multiple key-values. The match option is required as a safeguard.
+     * CAUTION: use `{ match: '*' }` to delete all key-values.
+     * @example
+     * await state.deleteAll({ match: 'abc*' })
+     * @param options - deleteAll options.
+     * @param options.match - REQUIRED, a glob pattern to specify which keys to delete.
+     * @returns returns an object with the number of deleted keys.
      */
-    deleteAll(): Promise<boolean>;
+    deleteAll(options: {
+        match: string;
+    }): Promise<{ keys: number; }>;
     /**
-     * There exists key-values.
+     * There exists key-values in the region.
      * @returns true if exists, false if not
      */
     any(): Promise<boolean>;
     /**
      * Get stats.
-     * @returns namespace stats or false if not exists
+     * @returns State container stats.
      */
-    stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; } | boolean>;
+    stats(): Promise<{ bytesKeys: number; bytesValues: number; keys: number; }>;
     /**
      * List keys, returns an iterator. Every iteration returns a batch of
      * approximately `countHint` keys.
