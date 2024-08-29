@@ -73,12 +73,23 @@ jest.mock('@adobe/aio-lib-env', () => {
   }
 })
 
+const mockLogDebug = jest.fn()
+const mockLogError = jest.fn()
+jest.mock('@adobe/aio-lib-core-logging', () => () => {
+  return {
+    debug: (...args) => mockLogDebug(...args),
+    error: (...args) => mockLogError(...args)
+  }
+})
+
 // jest globals //////////////////////////////////////////////////////////
 
 beforeEach(() => {
   delete process.env.AIO_STATE_ENDPOINT
   mockCLIEnv.mockReturnValue(DEFAULT_ENV)
   mockExponentialBackoff.mockReset()
+  mockLogDebug.mockReset()
+  mockLogError.mockReset()
 })
 
 // //////////////////////////////////////////////////////////
@@ -747,4 +758,31 @@ describe('private methods', () => {
     const url = store.createRequestUrl()
     expect(url).toEqual(`https://custom.abc.com/containers/${fakeCredentials.namespace}`)
   })
+})
+
+test('log debug hides authorization header', async () => {
+  const store = await AdobeState.init(fakeCredentials)
+
+  // get
+  const expiryHeaderValue = '1707445350000'
+  const options = {
+    headersGet: (header) => {
+      if (header === HEADER_KEY_EXPIRES) {
+        return expiryHeaderValue
+      }
+    }
+  }
+  mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse('value', options))
+
+  await store.get('a')
+  await store.put('a', '1')
+  await store.delete('a')
+  await store.any()
+
+  mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(JSON.stringify({ keys: 1 })))
+  await store.list().next
+  await store.deleteAll({ match: 'a' })
+  await store.stats()
+
+  expect(mockLogDebug).not.toHaveBeenCalledWith(expect.stringContaining(fakeCredentials.apikey))
 })
