@@ -55,26 +55,17 @@ describe('isInternalToAdobeRuntime', () => {
   })
 
   test('in runtime context', () => {
-    process.env.__OW_NAMESPACE = 'some-namespace'
-    process.env.__OW_API_HOST = 'some-server-dot-com'
-    process.env.__OW_ACTIVATION_ID = 'some-activation-id'
-
+    process.env.__OW_CLOUD = 'aws'
     expect(isInternalToAdobeRuntime()).toBeTruthy()
   })
 
   test('not in runtime context', () => {
-    // make doubly sure the env vars are not there
-    delete process.env.__OW_NAMESPACE
-    delete process.env.__OW_API_HOST
-    delete process.env.__OW_ACTIVATION_ID
-
+    process.env.__OW_CLOUD = undefined
     expect(isInternalToAdobeRuntime()).toBeFalsy()
   })
 
   test('in runtime context - endpoints should be internal', () => {
-    process.env.__OW_NAMESPACE = 'some-namespace'
-    process.env.__OW_API_HOST = 'some-server-dot-com'
-    process.env.__OW_ACTIVATION_ID = 'some-activation-id'
+    process.env.__OW_CLOUD = 'aws'
 
     expect(isInternalToAdobeRuntime()).toBeTruthy()
     jest.isolateModules(() => {
@@ -85,16 +76,24 @@ describe('isInternalToAdobeRuntime', () => {
   })
 
   test('not in runtime context - endpoints should be public', () => {
-    // make doubly sure the env vars are not there
-    delete process.env.__OW_NAMESPACE
-    delete process.env.__OW_API_HOST
-    delete process.env.__OW_ACTIVATION_ID
+    process.env.__OW_CLOUD = undefined
 
     expect(isInternalToAdobeRuntime()).toBeFalsy()
     jest.isolateModules(() => {
       const constants = require('../lib/constants')
       expect(constants.ENDPOINTS.prod).toEqual(constants.ENDPOINT_PROD)
       expect(constants.ENDPOINTS.stage).toEqual(constants.ENDPOINT_STAGE)
+    })
+  })
+
+  test('in runtime context - endpoints should be internal (ensure order of tests does not matter)', () => {
+    process.env.__OW_CLOUD = 'aws'
+
+    expect(isInternalToAdobeRuntime()).toBeTruthy()
+    jest.isolateModules(() => {
+      const constants = require('../lib/constants')
+      expect(constants.ENDPOINTS.prod).toEqual(constants.ENDPOINT_PROD_INTERNAL)
+      expect(constants.ENDPOINTS.stage).toEqual(constants.ENDPOINT_STAGE_INTERNAL)
     })
   })
 })
