@@ -46,7 +46,7 @@
     "eslint-config-standard": "^17",
     "eslint-plugin-import": "^2",
     "eslint-plugin-jest": "^27",
-    "eslint-plugin-jsdoc": "^48",
+    "eslint-plugin-jsdoc": "^50",
     "eslint-plugin-n": "^16.4",
     "eslint-plugin-node": "^11",
     "eslint-plugin-promise": "^6",
