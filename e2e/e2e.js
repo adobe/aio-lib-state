@@ -294,7 +294,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
       }))
   })
 
-  // this test is slow to execute uncomment if needed
+  // this test is slow to execute uncomment if needed (we could also pre-load the data set in the future)
   // eslint-disable-next-line jest/no-commented-out-tests
   // test('list while having a large dataset stored', async () => {
   //   // reason: https://github.com/adobe/aio-lib-state/issues/194
