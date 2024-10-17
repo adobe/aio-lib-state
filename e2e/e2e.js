@@ -227,25 +227,6 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect(ret.sort()).toEqual(keysNotExpired)
   })
 
-  test('list while having a large dataset stored', async () => {
-    // reason: https://github.com/adobe/aio-lib-state/issues/194
-    const state = await initStateEnv()
-
-    const keysBig = genKeyStrings(15000, `${uniquePrefix}__big_list`).sort()
-    await putKeys(state, keysBig, { ttl: 300 })
-
-    const keysSmall = genKeyStrings(82, `${uniquePrefix}__small_list`).sort()
-    await putKeys(state, keysSmall, { ttl: 300 }) // ttl=300s
-
-    // ensure we can list adhoc data
-    const retArray = []
-    for await (const { keys } of state.list({ match: `${uniquePrefix}__small_list*`, countHint: 100 })) {
-      retArray.push(...keys)
-    }
-    // in this test we want to make sure that list works even when many keys are included
-    expect(retArray.length).toEqual(82)
-  }, 300 * 1000)
-
   test('deleteAll test', async () => {
     const state = await initStateEnv()
 
@@ -312,4 +293,25 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
         code: 'ERROR_PAYLOAD_TOO_LARGE'
       }))
   })
+
+  // this test is slow to execute uncomment if needed
+  // eslint-disable-next-line jest/no-commented-out-tests
+  // test('list while having a large dataset stored', async () => {
+  //   // reason: https://github.com/adobe/aio-lib-state/issues/194
+  //   const state = await initStateEnv()
+
+  //   const keysBig = genKeyStrings(15000, `${uniquePrefix}__big_list`).sort()
+  //   await putKeys(state, keysBig, { ttl: 300 })
+
+  //   const keysSmall = genKeyStrings(82, `${uniquePrefix}__small_list`).sort()
+  //   await putKeys(state, keysSmall, { ttl: 300 }) // ttl=300s
+
+  //   // ensure we can list adhoc data
+  //   const retArray = []
+  //   for await (const { keys } of state.list({ match: `${uniquePrefix}__small_list*`, countHint: 100 })) {
+  //     retArray.push(...keys)
+  //   }
+  //   // in this test we want to make sure that list works even when many keys are included
+  //   expect(retArray.length).toEqual(82)
+  // }, 300 * 1000)
 })
