@@ -44,15 +44,14 @@ const genKeyStrings = (n, identifier) => {
   return (new Array(n).fill(0).map((_, idx) => {
     const char = String.fromCharCode(97 + idx % 26)
     // list-[a-z]-[0-(N-1)]
-    return `${uniquePrefix}__${identifier}_${char}_${idx}`
+    return `${identifier}_${char}_${idx}`
   }))
 }
-const putKeys = async (state, keys, ttl) => {
+const putKeys = async (state, keys, { ttl, batchSize = 50 }) => {
   const _putKeys = async (keys, ttl) => {
     await Promise.all(keys.map(async (k, idx) => await state.put(k, `value-${idx}`, { ttl })))
   }
 
-  const batchSize = 20
   let i = 0
   while (i < keys.length - batchSize) {
     await _putKeys(keys.slice(i, i + batchSize), ttl)
@@ -62,6 +61,13 @@ const putKeys = async (state, keys, ttl) => {
   await _putKeys(keys.slice(i), ttl)
 }
 const waitFor = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const listAll = async (state, options = {}) => {
+  const acc = []
+  for await (const { keys } of state.list(options)) {
+    acc.push(...keys)
+  }
+  return acc
+}
 
 test('env vars', () => {
   expect(process.env.TEST_AUTH_1).toBeDefined()
@@ -166,113 +172,72 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     await expect(state.put(testKey, testValue, { ttl: -1 })).rejects.toThrow()
   })
 
-  test('listKeys test: few, many, and expired entries', async () => {
+  test('list: countHint & match', async () => {
     const state = await initStateEnv()
 
-    // 1. test with not many elements, one iteration should return all
-    const keys90 = genKeyStrings(90, 'list').sort()
-    await putKeys(state, keys90, 60)
+    const prefix = `${uniquePrefix}__list`
+    const keys900 = genKeyStrings(900, prefix).sort()
+    await putKeys(state, keys900, { ttl: 60 })
 
-    let it, ret
+    // listAll without match, note that other keys may be stored in namespace.
+    const retAll = await listAll(state)
+    expect(retAll.length).toBeGreaterThanOrEqual(900)
 
-    // note: when listing all we are not in isolation
-    it = state.list()
-    ret = await it.next()
-    expect(ret.value.keys.length).toBeGreaterThanOrEqual(90)
+    // default countHint = 100
+    const retHint100 = await listAll(state, { match: `${uniquePrefix}__list*` })
+    expect(retHint100.length).toEqual(900)
+    expect(retHint100.sort()).toEqual(keys900)
 
-    it = state.list({ match: `${uniquePrefix}__list_*` })
-    ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual(keys90)
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    // set countHint = 1000
+    //   in most cases, list should return in 1 iteration,
+    //   but we can't guarantee this as the server may return with less keys and
+    //   require additional iterations, especially if there are many keys in the namespace.
+    //   This is why we call listAll with countHint 1000 too.
+    const retHint1000 = await listAll(state, { match: `${uniquePrefix}__list*`, countHint: 1000 })
+    expect(retHint1000.length).toEqual(900)
+    expect(retHint1000.sort()).toEqual(keys900)
 
-    it = state.list({ match: `${uniquePrefix}__list_a*` })
-    ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual([
-      `${uniquePrefix}__list_a_0`,
-      `${uniquePrefix}__list_a_26`,
-      `${uniquePrefix}__list_a_52`,
-      `${uniquePrefix}__list_a_78`
-    ])
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    // sub patterns
+    const retA = await listAll(state, { match: `${uniquePrefix}__list_a*` })
+    expect(retA.length).toEqual(35)
+    expect(retA).toContain(
+      `${uniquePrefix}__list_a_26`
+    )
 
-    it = state.list({ match: `${uniquePrefix}__list_*_1` })
-    ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual([`${uniquePrefix}__list_b_1`])
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    const ret1 = await listAll(state, { match: `${uniquePrefix}__list_*_1` })
+    expect(ret1.length).toEqual(1)
 
-    // 2. test with many elements and large countHint
-    const keys900 = genKeyStrings(900, 'list')
-    await putKeys(state, keys900, 60)
+    const retstar = await listAll(state, { match: `${uniquePrefix}__l*st_*` })
+    expect(retstar.length).toEqual(900)
+  })
 
-    // note: we can't list in isolation without prefix
-    it = state.list({ countHint: 1000 })
-    ret = await it.next()
-    expect(ret.value.keys.length).toBeGreaterThanOrEqual(900)
+  test('list expired keys', async () => {
+    const state = await initStateEnv()
 
-    it = state.list({ countHint: 1000, match: `${uniquePrefix}__li*t_*` })
-    ret = await it.next()
-    expect(ret.value.keys.length).toEqual(900)
-    expect(await it.next()).toEqual({ done: true, value: undefined })
-
-    it = state.list({ countHint: 1000, match: `${uniquePrefix}__list_z*` })
-    ret = await it.next()
-    expect(ret.value.keys.length).toEqual(34)
-    expect(await it.next()).toEqual({ done: true, value: undefined })
-
-    it = state.list({ match: `${uniquePrefix}__list_*_1` })
-    ret = await it.next()
-    expect(ret.value.keys.sort()).toEqual([`${uniquePrefix}__list_b_1`])
-    expect(await it.next()).toEqual({ done: true, value: undefined })
-
-    // 3. test with many elements while iterating
-    let iterations = 0
-    let retArray = []
-    for await (const { keys } of state.list({ match: `${uniquePrefix}__l*st_*` })) {
-      iterations++
-      retArray.push(...keys)
-    }
-    expect(iterations).toBeGreaterThan(5) // should be around 9-10
-    expect(retArray.length).toEqual(900)
-
-    iterations = 0
-    retArray = []
-    for await (const { keys } of state.list({ match: `${uniquePrefix}__list_z*` })) {
-      iterations++
-      retArray.push(...keys)
-    }
-    expect(iterations).toEqual(1)
-    expect(retArray.length).toEqual(34)
-
-    iterations = 0
-    retArray = []
-    for await (const { keys } of state.list({ match: `${uniquePrefix}__list_*_1` })) {
-      iterations++
-      retArray.push(...keys)
-    }
-    expect(iterations).toEqual(1)
-    expect(retArray.length).toEqual(1)
-
-    // 4. make sure expired keys aren't listed
-    await putKeys(state, keys90, 1)
+    // make sure expired keys aren't listed
+    const keysExpired = genKeyStrings(90, `${uniquePrefix}__exp_yes`)
+    const keysNotExpired = genKeyStrings(90, `${uniquePrefix}__exp_no`).sort()
+    await putKeys(state, keysExpired, { ttl: 1 })
+    await putKeys(state, keysNotExpired, { ttl: 120 })
     await waitFor(2000)
 
-    it = state.list({ countHint: 1000, match: `${uniquePrefix}__list_*` })
-    ret = await it.next()
-    expect(ret.value.keys.length).toEqual(810) // 900 - 90
-    expect(await it.next()).toEqual({ done: true, value: undefined })
+    // Note, we don't guarantee not returning expired keys, and in some rare cases it may happen.
+    // if the test fails we should disable it.
+    const ret = await listAll(state, { match: `${uniquePrefix}__exp*` })
+    expect(ret.sort()).toEqual(keysNotExpired)
   })
 
   test('deleteAll test', async () => {
     const state = await initStateEnv()
 
     // < 100 keys
-    const keys90 = genKeyStrings(90, 'deleteAll').sort()
+    const keys90 = genKeyStrings(90, `${uniquePrefix}__deleteAll`).sort()
     await putKeys(state, keys90, 60)
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_a*` })).toEqual({ keys: 4 })
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_*` })).toEqual({ keys: 86 })
 
     // > 1000 keys
-    const keys1100 = genKeyStrings(1100, 'deleteAll').sort()
+    const keys1100 = genKeyStrings(1100, `${uniquePrefix}__deleteAll`).sort()
     await putKeys(state, keys1100, 60)
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_*_1` })).toEqual({ keys: 1 })
     expect(await state.deleteAll({ match: `${uniquePrefix}__deleteAll_*_1*0` })).toEqual({ keys: 21 }) // 10, 100 - 190, 1000-1090
@@ -328,4 +293,25 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
         code: 'ERROR_PAYLOAD_TOO_LARGE'
       }))
   })
+
+  // this test is slow to execute uncomment if needed (we could also pre-load the data set in the future)
+  // eslint-disable-next-line jest/no-commented-out-tests
+  // test('list while having a large dataset stored', async () => {
+  //   // reason: https://github.com/adobe/aio-lib-state/issues/194
+  //   const state = await initStateEnv()
+
+  //   const keysBig = genKeyStrings(15000, `${uniquePrefix}__big_list`).sort()
+  //   await putKeys(state, keysBig, { ttl: 300 })
+
+  //   const keysSmall = genKeyStrings(82, `${uniquePrefix}__small_list`).sort()
+  //   await putKeys(state, keysSmall, { ttl: 300 }) // ttl=300s
+
+  //   // ensure we can list adhoc data
+  //   const retArray = []
+  //   for await (const { keys } of state.list({ match: `${uniquePrefix}__small_list*`, countHint: 100 })) {
+  //     retArray.push(...keys)
+  //   }
+  //   // in this test we want to make sure that list works even when many keys are included
+  //   expect(retArray.length).toEqual(82)
+  // }, 300 * 1000)
 })
