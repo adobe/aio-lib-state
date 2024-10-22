@@ -721,17 +721,61 @@ describe('private methods', () => {
     expect(url).toEqual(`https://storage-state-amer.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
   })
 
-  test('custom stage, emea', async () => {
+  test('env=stage', async () => {
     jest.resetModules()
-    const region = 'emea'
     const env = STAGE_ENV
     mockCLIEnv.mockReturnValue(env)
 
     // need to instantiate a new store, when env changes
     const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-amer.stg.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('env=stage && region!=amer', async () => {
+    jest.resetModules()
+    const env = STAGE_ENV
+    mockCLIEnv.mockReturnValue(env)
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    await expect(customAdobeState.init({ ...fakeCredentials, region: 'emea' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
+    await expect(customAdobeState.init({ ...fakeCredentials, region: 'apac' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
+    await expect(customAdobeState.init({ ...fakeCredentials, region: 'amerr' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
+  })
+
+  test('region=amer', async () => {
+    jest.resetModules()
+    const region = 'amer'
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
     const store = await customAdobeState.init({ ...fakeCredentials, region })
     const url = store.createRequestUrl()
-    expect(url).toEqual(`https://storage-state-${region}.stg.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
+    expect(url).toEqual(`https://storage-state-${region}.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('region=emea', async () => {
+    jest.resetModules()
+    const region = 'emea'
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials, region })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-${region}.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('region=apac', async () => {
+    jest.resetModules()
+    const region = 'apac'
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials, region })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-${region}.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
   })
 
   test('custom AIO_STATE_ENDPOINT', async () => {
