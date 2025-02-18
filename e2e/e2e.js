@@ -62,6 +62,11 @@ const putKeys = async (state, keys, { ttl, batchSize = 50 }) => {
 }
 const waitFor = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 const listAll = async (state, options = {}) => {
+  // since https://git.corp.adobe.com/CNA/adp-storage-state/pull/88 we are
+  // listing against a replica so we need to wait for the replica to be in sync
+  // to have exact results. The replication lag is about ~5ms, let's be
+  // conservative to avoid test failures.
+  waitFor(100)
   const acc = []
   for await (const { keys } of state.list(options)) {
     acc.push(...keys)
