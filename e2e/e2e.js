@@ -101,7 +101,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     expect({ name: expectedError.name, code: expectedError.code, message: expectedError.message, sdkDetails: expectedError.sdkDetails })
       .toEqual(expect.objectContaining({
         name: 'AdobeStateLibError',
-        code: 'ERROR_BAD_CREDENTIALS'
+        code: 'ERROR_UNAUTHORIZED'
       }))
   })
 
