@@ -705,7 +705,7 @@ describe('private methods', () => {
       mockCLIEnv.mockReturnValue(env)
 
       await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
-        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea')
+        .toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea, apac')
     })
   })
 
