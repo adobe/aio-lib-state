@@ -165,7 +165,7 @@ export type OpenWhiskCredentials = {
  * to use ootb credentials to access the state management service. OpenWhisk
  * namespace and auth can also be passed through environment variables:
  * `__OW_NAMESPACE` and `__OW_API_KEY`
- * @param [config.region] - optional region to use, accepted values: `amer` (default), `emea`
+ * @param [config.region] - optional region to use, accepted values: `amer` (default), `emea`, `apac`
  * @returns An AdobeState instance
  */
 export function init(config?: {

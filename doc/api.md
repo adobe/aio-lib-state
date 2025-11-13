@@ -196,7 +196,7 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | --- | --- | --- |
 | [config] | <code>object</code> | used to init the sdk |
 | [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
-| [config.region] | <code>string</code> | optional region to use, accepted values: `amer` (default), `emea` |
+| [config.region] | <code>string</code> | optional region to use, accepted values: `amer` (default), `emea`, `apac` |
 
 <a name="AdobeStateCredentials"></a>
 
