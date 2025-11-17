@@ -197,6 +197,8 @@ OpenWhisk credentials can also be read from environment variables `__OW_NAMESPAC
 | [config] | <code>object</code> | used to init the sdk |
 | [config.ow] | [<code>OpenWhiskCredentials</code>](#OpenWhiskCredentials) | [OpenWhiskCredentials](#OpenWhiskCredentials). Set those if you want to use ootb credentials to access the state management service. OpenWhisk namespace and auth can also be passed through environment variables: `__OW_NAMESPACE` and `__OW_API_KEY` |
 | [config.region] | <code>string</code> | optional region to use, accepted values: `amer` (default), `emea`, `apac` |
+| [config.logLevel] | <code>string</code> | optional log level for the HttpExponentialBackoff instance |
+| [config.logRetryAfterSeconds] | <code>number</code> | Defaults to 10. if the request has to retry because of a 429, it will log the retry attempt as a warning if the Retry-After value is greater than this number. Set to 0 to disable. |
 
 <a name="AdobeStateCredentials"></a>
 
