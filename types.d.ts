@@ -7,7 +7,7 @@
 export type AdobeStateCredentials = {
     namespace: string;
     apikey: string;
-    region: 'amer' | 'apac' | 'emea';
+    region: 'amer' | 'apac' | 'emea' | 'aus';
 };
 
 /**
@@ -165,7 +165,7 @@ export type OpenWhiskCredentials = {
  * to use ootb credentials to access the state management service. OpenWhisk
  * namespace and auth can also be passed through environment variables:
  * `__OW_NAMESPACE` and `__OW_API_KEY`
- * @param [config.region] - optional region to use, accepted values: `amer` (default), `emea`, `apac`
+ * @param [config.region] - optional region to use, accepted values: `amer` (default), `emea`, `apac`, `aus`
  * @param [config.logLevel] - optional log level for the HttpExponentialBackoff instance
  * @param [config.logRetryAfterSeconds] - Defaults to 10. if the request has to retry because of a 429, it will log the retry attempt as a warning if the Retry-After value is greater than this number. Set to 0 to disable.
  * @returns An AdobeState instance
