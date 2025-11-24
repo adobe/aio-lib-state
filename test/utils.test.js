@@ -149,13 +149,14 @@ describe('formatAjvErrors', () => {
           allowedValues: [
             'amer',
             'apac',
-            'emea'
+            'emea',
+            'aus'
           ]
         },
         message: 'must be equal to one of the allowed values'
       }
     ]
-    expect(formatAjvErrors(errors)[0]).toMatch('/region must be equal to one of the allowed values: amer, apac, emea')
+    expect(formatAjvErrors(errors)[0]).toMatch('/region must be equal to one of the allowed values: amer, apac, emea, aus')
   })
 
   test('type keyword', () => {

@@ -705,7 +705,7 @@ describe('private methods', () => {
       mockCLIEnv.mockReturnValue(env)
 
       await expect(AdobeState.init({ ...fakeCredentials, region })).rejects
-        .toThrow(new Error('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea, apac'))
+        .toThrow(new Error('[AdobeStateLib:ERROR_BAD_ARGUMENT] /region must be equal to one of the allowed values: amer, emea, apac, aus'))
     })
   })
 
@@ -742,6 +742,7 @@ describe('private methods', () => {
     const customAdobeState = require('../lib/AdobeState').AdobeState
     await expect(customAdobeState.init({ ...fakeCredentials, region: 'emea' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
     await expect(customAdobeState.init({ ...fakeCredentials, region: 'apac' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
+    await expect(customAdobeState.init({ ...fakeCredentials, region: 'aus' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
     await expect(customAdobeState.init({ ...fakeCredentials, region: 'amerr' })).rejects.toThrow('[AdobeStateLib:ERROR_BAD_ARGUMENT] AIO_CLI_ENV=stage only supports the amer region.')
   })
 
@@ -770,6 +771,17 @@ describe('private methods', () => {
   test('region=apac', async () => {
     jest.resetModules()
     const region = 'apac'
+
+    // need to instantiate a new store, when env changes
+    const customAdobeState = require('../lib/AdobeState').AdobeState
+    const store = await customAdobeState.init({ ...fakeCredentials, region })
+    const url = store.createRequestUrl()
+    expect(url).toEqual(`https://storage-state-${region}.app-builder.adp.adobe.io/containers/${fakeCredentials.namespace}`)
+  })
+
+  test('region=aus', async () => {
+    jest.resetModules()
+    const region = 'aus'
 
     // need to instantiate a new store, when env changes
     const customAdobeState = require('../lib/AdobeState').AdobeState
