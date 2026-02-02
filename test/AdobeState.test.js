@@ -466,9 +466,6 @@ describe('list()', () => {
 
   test('validation', async () => {
     expect(() => store.list({ match: 'illegalchar*!"' })).toThrow('must match')
-    expect(() => store.list({ countHint: 'f' })).toThrow('must be integer')
-    expect(() => store.list({ countHint: 99 })).toThrow('must be in the [100, 1000] range')
-    expect(() => store.list({ countHint: 1001 })).toThrow('must be in the [100, 1000] range')
   })
 
   test('not found', async () => {
@@ -556,7 +553,7 @@ describe('list()', () => {
       )
   })
 
-  test('list 3 iterations with pattern and countHint', async () => {
+  test('list 3 iterations with pattern', async () => {
     const fetchResponseJson = JSON.stringify({
       keys: ['a', 'b', 'c'],
       cursor: 1
@@ -575,7 +572,7 @@ describe('list()', () => {
 
     const allKeys = []
     // no pattern matching is happening on the client, we just check that the pattern is in a valid format
-    for await (const { keys } of store.list({ match: 'valid*', countHint: 1000 })) {
+    for await (const { keys } of store.list({ match: 'valid*' })) {
       allKeys.push(...keys)
     }
     expect(allKeys).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
@@ -583,12 +580,12 @@ describe('list()', () => {
     expect(mockExponentialBackoff).toHaveBeenCalledTimes(3)
     expect(mockExponentialBackoff)
       .toHaveBeenCalledWith(
-        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&countHint=1000&cursor=0',
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&cursor=0',
         expect.objectContaining({ method: 'GET' })
       )
     expect(mockExponentialBackoff)
       .toHaveBeenCalledWith(
-        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&countHint=1000&cursor=2',
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?match=valid*&cursor=2',
         expect.objectContaining({ method: 'GET' })
       )
   })

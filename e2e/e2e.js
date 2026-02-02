@@ -177,30 +177,22 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     await expect(state.put(testKey, testValue, { ttl: -1 })).rejects.toThrow()
   })
 
-  test('list: countHint & match', async () => {
+  test('list: match', async () => {
     const state = await initStateEnv()
 
     const prefix = `${uniquePrefix}__list`
     const keys900 = genKeyStrings(900, prefix).sort()
     await putKeys(state, keys900, { ttl: 60 })
 
-    // listAll without match, note that other keys may be stored in namespace.
+    // listAll without match, note that other keys may be stored in namespace. 
+    // max return elements is 1000 keys.
     const retAll = await listAll(state)
     expect(retAll.length).toBeGreaterThanOrEqual(900)
 
-    // default countHint = 100
-    const retHint100 = await listAll(state, { match: `${uniquePrefix}__list*` })
-    expect(retHint100.length).toEqual(900)
-    expect(retHint100.sort()).toEqual(keys900)
-
-    // set countHint = 1000
-    //   in most cases, list should return in 1 iteration,
-    //   but we can't guarantee this as the server may return with less keys and
-    //   require additional iterations, especially if there are many keys in the namespace.
-    //   This is why we call listAll with countHint 1000 too.
-    const retHint1000 = await listAll(state, { match: `${uniquePrefix}__list*`, countHint: 1000 })
-    expect(retHint1000.length).toEqual(900)
-    expect(retHint1000.sort()).toEqual(keys900)
+    // list with match pattern
+    const retMatch = await listAll(state, { match: `${uniquePrefix}__list*` })
+    expect(retMatch.length).toEqual(900)
+    expect(retMatch.sort()).toEqual(keys900)
 
     // sub patterns
     const retA = await listAll(state, { match: `${uniquePrefix}__list_a*` })
@@ -224,10 +216,10 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     const keysNotExpired = genKeyStrings(90, `${uniquePrefix}__exp_no`).sort()
     await putKeys(state, keysExpired, { ttl: 1 })
     await putKeys(state, keysNotExpired, { ttl: 120 })
-    await waitFor(2000)
 
-    // Note, we don't guarantee not returning expired keys, and in some rare cases it may happen.
+    // Note, we don't guarantee not returning expired keys (list is eventually consistent), and in some rare cases it may happen.
     // if the test fails we should disable it.
+    await waitFor(2000)
     const ret = await listAll(state, { match: `${uniquePrefix}__exp*` })
     expect(ret.sort()).toEqual(keysNotExpired)
   })
