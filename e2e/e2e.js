@@ -184,7 +184,7 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
     const keys900 = genKeyStrings(900, prefix).sort()
     await putKeys(state, keys900, { ttl: 60 })
 
-    // listAll without match, note that other keys may be stored in namespace. 
+    // listAll without match, note that other keys may be stored in namespace.
     // max return elements is 1000 keys.
     const retAll = await listAll(state)
     expect(retAll.length).toBeGreaterThanOrEqual(900)
@@ -206,6 +206,36 @@ describe('e2e tests using OpenWhisk credentials (as env vars)', () => {
 
     const retstar = await listAll(state, { match: `${uniquePrefix}__l*st_*` })
     expect(retstar.length).toEqual(900)
+  })
+
+  test('list: countHint backwards compatibility (direct fetch)', async () => {
+    // This test directly hits the state endpoint with countHint to verify
+    // the server still accepts the parameter for backwards compatibility
+    const state = await initStateEnv()
+
+    const prefix = `${uniquePrefix}__count_hint_compat`
+    const keys10 = genKeyStrings(10, prefix).sort()
+    await putKeys(state, keys10, { ttl: 120 })
+
+    // Build the URL manually with countHint parameter
+    const namespace = process.env.TEST_NAMESPACE_1
+    const apikey = process.env.TEST_AUTH_1
+    const baseUrl = state.endpoint || process.env.AIO_STATE_ENDPOINT
+    const url = `${baseUrl}/containers/${namespace}/data?match=${prefix}*&countHint=100&cursor=0`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${Buffer.from(apikey).toString('base64')}`
+      }
+    })
+
+    // Server should accept countHint and return 200
+    expect(response.status).toEqual(200)
+    const data = await response.json()
+    expect(data.keys).toBeDefined()
+    expect(Array.isArray(data.keys)).toBe(true)
+    expect(data.keys.length).toEqual(10)
   })
 
   test('list expired keys', async () => {

@@ -75,10 +75,12 @@ jest.mock('@adobe/aio-lib-env', () => {
 
 const mockLogDebug = jest.fn()
 const mockLogError = jest.fn()
+const mockLogWarn = jest.fn()
 jest.mock('@adobe/aio-lib-core-logging', () => () => {
   return {
     debug: (...args) => mockLogDebug(...args),
-    error: (...args) => mockLogError(...args)
+    error: (...args) => mockLogError(...args),
+    warn: (...args) => mockLogWarn(...args)
   }
 })
 
@@ -466,6 +468,27 @@ describe('list()', () => {
 
   test('validation', async () => {
     expect(() => store.list({ match: 'illegalchar*!"' })).toThrow('must match')
+  })
+
+  test('countHint option logs warning', async () => {
+    const fetchResponseJson = JSON.stringify({
+      keys: ['a', 'b', 'c'],
+      cursor: 0
+    })
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse(fetchResponseJson))
+
+    const allKeys = []
+    for await (const { keys } of store.list({ countHint: 100 })) {
+      allKeys.push(...keys)
+    }
+    expect(allKeys).toEqual(['a', 'b', 'c'])
+    expect(mockLogWarn).toHaveBeenCalledWith("The 'countHint' option has been removed and is ignored.")
+
+    // countHint should not be in the URL
+    expect(mockExponentialBackoff).toHaveBeenCalledWith(
+      'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data?cursor=0',
+      expect.objectContaining({ method: 'GET' })
+    )
   })
 
   test('not found', async () => {
