@@ -153,8 +153,7 @@ Get stats.
 <a name="AdobeState+list"></a>
 
 ### *adobeState.list(options) ⇒ <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code>*
-List keys, returns an iterator. Every iteration returns a batch of
-approximately `countHint` keys.
+List keys, returns an iterator. Every call scans 1000 keys.
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
 **Returns**: <code>AsyncGenerator.&lt;{keys: Array.&lt;string&gt;}&gt;</code> - an async generator which yields a
@@ -164,7 +163,6 @@ approximately `countHint` keys.
 | --- | --- | --- |
 | options | <code>object</code> | list options |
 | options.match | <code>string</code> | a glob pattern that supports '*' to filter   keys. |
-| options.countHint | <code>number</code> | an approximate number on how many items   to return per iteration. Default: 100, min: 10, max: 1000. |
 
 **Example**  
 ```js
