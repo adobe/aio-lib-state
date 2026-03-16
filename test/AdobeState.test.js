@@ -273,13 +273,13 @@ describe('put', () => {
     const key = 'some-key'
     const value = 'some-value'
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(401))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(401, 'myerror'))
     await expect(store.put(key, value)).rejects.toThrow(
       expect.objectContaining({
         sdkDetails: expect.objectContaining({
           requestId: 'fake-req-id'
         }),
-        message: '[AdobeStateLib:ERROR_UNAUTHORIZED] you are not authorized to access State service'
+        message: '[AdobeStateLib:ERROR_UNAUTHORIZED] myerror'
       }))
   })
 
@@ -287,13 +287,13 @@ describe('put', () => {
     const key = 'some-key'
     const value = 'some-value'
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(403))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(403, 'myerror'))
     await expect(store.put(key, value)).rejects.toThrow(
       expect.objectContaining({
         sdkDetails: expect.objectContaining({
           requestId: 'fake-req-id'
         }),
-        message: '[AdobeStateLib:ERROR_BAD_CREDENTIALS] cannot access State service, make sure your credentials are valid'
+        message: '[AdobeStateLib:ERROR_FORBIDDEN] myerror'
       }))
   })
 
@@ -301,13 +301,13 @@ describe('put', () => {
     const key = 'some-key'
     const value = 'some-value'
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(413))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(413, 'myerror'))
     await expect(store.put(key, value)).rejects.toThrow(
       expect.objectContaining({
         sdkDetails: expect.objectContaining({
           requestId: 'fake-req-id'
         }),
-        message: '[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] key, value or request payload is too large State service'
+        message: '[AdobeStateLib:ERROR_PAYLOAD_TOO_LARGE] myerror'
       }))
   })
 
@@ -315,13 +315,27 @@ describe('put', () => {
     const key = 'some-key'
     const value = 'some-value'
 
-    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(429))
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(429, 'myerror'))
     await expect(store.put(key, value)).rejects.toThrow(
       expect.objectContaining({
         sdkDetails: expect.objectContaining({
           requestId: 'fake-req-id'
         }),
-        message: '[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] Request rate too high. Please retry after sometime.'
+        message: '[AdobeStateLib:ERROR_REQUEST_RATE_TOO_HIGH] myerror'
+      }))
+  })
+  test('coverage: unknown user error', async () => {
+    const key = 'some-key'
+    const value = 'some-value'
+    const responseBody = 'error: this is the response body'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(400, responseBody))
+    await expect(store.put(key, value)).rejects.toThrow(
+      expect.objectContaining({
+        sdkDetails: expect.objectContaining({
+          requestId: 'fake-req-id'
+        }),
+        message: `[AdobeStateLib:ERROR_BAD_REQUEST] ${responseBody}`
       }))
   })
 
@@ -336,7 +350,7 @@ describe('put', () => {
         sdkDetails: expect.objectContaining({
           requestId: 'fake-req-id'
         }),
-        message: `[AdobeStateLib:ERROR_INTERNAL] unexpected response from State service with status: 500 body: ${responseBody}`
+        message: `[AdobeStateLib:ERROR_INTERNAL] unexpected response from State service with body: ${responseBody}`
       }))
   })
 
