@@ -20,7 +20,7 @@ governing permissions and limitations under the License.
 
 ## Getting started
 
-Please read the [AppBuilder State documentation](https://developer.adobe.com/app-builder/docs/guides/application_state/#state).
+Please read the [App Builder State documentation](https://developer.adobe.com/app-builder/docs/guides/app_builder_guides/storage/application-state#state).
 
 ## Contributing
 

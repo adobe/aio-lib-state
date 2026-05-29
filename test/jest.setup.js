@@ -31,12 +31,14 @@ process.on('unhandledRejection', error => {
 
 global.mockLogDebug = jest.fn()
 global.mockLogError = jest.fn()
+global.mockLogWarn = jest.fn()
 // must be mocked before any require that uses aio-lib-core-logging (doMock)
 jest.doMock('@adobe/aio-lib-core-logging', function () {
   return function () {
     return {
       debug: global.mockLogDebug,
-      error: global.mockLogError
+      error: global.mockLogError,
+      warn: global.mockLogWarn
     }
   }
 })
@@ -45,6 +47,7 @@ beforeEach(() => {
   jest.restoreAllMocks()
   global.mockLogDebug.mockReset()
   global.mockLogError.mockReset()
+  global.mockLogWarn.mockReset()
 })
 
 global.expectToThrowCustomError = async (func, code, words, expectedErrorDetails) => {
