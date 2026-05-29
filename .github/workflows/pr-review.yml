@@ -54,7 +54,7 @@ jobs:
   review:
     needs: check
     if: needs.check.outputs.allowed == 'true'
-    uses: adobe/aio-reusable-workflows/.github/workflows/pr-review.yml@main
+    uses: adobe/aio-reusable-workflows/.github/workflows/pr-review.yml@fix/pr-review-pedantic-and-human-replies
     with:
       pr_number: ${{ needs.check.outputs.pr_number }}
       head_sha: ${{ needs.check.outputs.head_sha }}
