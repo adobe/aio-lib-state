@@ -59,7 +59,7 @@ Cloud State Management
 * *[AdobeState](#AdobeState)*
     * *[.getRegionalEndpoint(endpoint, region)](#AdobeState+getRegionalEndpoint) ⇒ <code>string</code>*
     * *[.get(key)](#AdobeState+get) ⇒ [<code>Promise.&lt;AdobeStateGetReturnValue&gt;</code>](#AdobeStateGetReturnValue)*
-    * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;string&gt;</code>*
+    * *[.put(key, value, [options])](#AdobeState+put) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
     * *[.delete(key)](#AdobeState+delete) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
     * *[.deleteAll(options)](#AdobeState+deleteAll) ⇒ <code>Promise.&lt;{keys: number}&gt;</code>*
     * *[.any()](#AdobeState+any) ⇒ <code>Promise.&lt;boolean&gt;</code>*
@@ -94,11 +94,12 @@ If the key doesn't exist returns undefined.
 
 <a name="AdobeState+put"></a>
 
-### *adobeState.put(key, value, [options]) ⇒ <code>Promise.&lt;string&gt;</code>*
+### *adobeState.put(key, value, [options]) ⇒ <code>Promise.&lt;(string\|null)&gt;</code>*
 Creates or updates a state key-value pair
 
 **Kind**: instance method of [<code>AdobeState</code>](#AdobeState)  
-**Returns**: <code>Promise.&lt;string&gt;</code> - key  
+**Returns**: <code>Promise.&lt;(string\|null)&gt;</code> - key, or `null` if a specified ifNotExists/ifExists
+  condition was not met and the value was not written.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -223,6 +224,8 @@ AdobeState put options
 | Name | Type | Description |
 | --- | --- | --- |
 | ttl | <code>number</code> | Time-To-Live for key-value pair in seconds. When not   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults   to 24 hours. |
+| [ifNotExists] | <code>boolean</code> | Only write the key if it does not already   exist. Mutually exclusive with ifExists. If the key already exists, put()   resolves to `null` and does not overwrite the existing value. |
+| [ifExists] | <code>boolean</code> | Only write the key if it already exists.   Mutually exclusive with ifNotExists. If the key does not exist, put() resolves   to `null` and nothing is written. |
 
 <a name="AdobeStateGetReturnValue"></a>
 

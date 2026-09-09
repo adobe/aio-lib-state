@@ -239,6 +239,76 @@ describe('put', () => {
       )
   })
 
+  test('success ifNotExists (key does not exist yet)', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse({}))
+
+    const returnKey = await store.put(key, value, { ifNotExists: true })
+    expect(returnKey).toEqual(key)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key?ifNotExists=true',
+        expect.any(Object)
+      )
+  })
+
+  test('ifNotExists condition not met (key already exists) returns null and does not throw', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(409, '{}'))
+
+    const returnKey = await store.put(key, value, { ifNotExists: true })
+    expect(returnKey).toBeNull()
+  })
+
+  test('success ifExists (key already exists)', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchResponse({}))
+
+    const returnKey = await store.put(key, value, { ifExists: true })
+    expect(returnKey).toEqual(key)
+    expect(mockExponentialBackoff)
+      .toHaveBeenCalledWith(
+        'https://storage-state-amer.app-builder.adp.adobe.io/containers/some-namespace/data/valid-key?ifExists=true',
+        expect.any(Object)
+      )
+  })
+
+  test('ifExists condition not met (key does not exist) returns null and does not throw', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404, '{}'))
+
+    const returnKey = await store.put(key, value, { ifExists: true })
+    expect(returnKey).toBeNull()
+  })
+
+  test('a plain 404 (unrelated to ifExists) also returns the key unaffected since no condition was requested', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    mockExponentialBackoff.mockResolvedValue(wrapInFetchError(404, '{}'))
+
+    const returnKey = await store.put(key, value)
+    expect(returnKey).toEqual(key)
+  })
+
+  test('failure (ifNotExists and ifExists both set)', async () => {
+    const key = 'valid-key'
+    const value = 'some-value'
+
+    await expect(store.put(key, value, { ifNotExists: true, ifExists: true })).rejects.toThrow(
+      '[AdobeStateLib:ERROR_BAD_ARGUMENT] ifNotExists and ifExists are mutually exclusive.'
+    )
+    expect(mockExponentialBackoff).not.toHaveBeenCalled()
+  })
+
   test('failure (invalid key)', async () => {
     const key = 'invalid/key'
     const value = 'some-value'

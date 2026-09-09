@@ -16,9 +16,17 @@ export type AdobeStateCredentials = {
  *   defined or set to 0, defaults to 24 hours (86400s). Max TTL is one year
  *   (31536000s), `require('@adobe/aio-lib-state').MAX_TTL`. A TTL of 0 defaults
  *   to 24 hours.
+ * @property [ifNotExists] - Only write the key if it does not already
+ *   exist. Mutually exclusive with ifExists. If the key already exists, put()
+ *   resolves to `null` and does not overwrite the existing value.
+ * @property [ifExists] - Only write the key if it already exists.
+ *   Mutually exclusive with ifNotExists. If the key does not exist, put() resolves
+ *   to `null` and nothing is written.
  */
 export type AdobeStatePutOptions = {
     ttl: number;
+    ifNotExists?: boolean;
+    ifExists?: boolean;
 };
 
 /**
@@ -54,9 +62,10 @@ export class AdobeState {
      * @param key - state key identifier
      * @param value - state value
      * @param [options] - put options
-     * @returns key
+     * @returns key, or `null` if a specified ifNotExists/ifExists
+     *   condition was not met and the value was not written.
      */
-    put(key: string, value: string, options?: AdobeStatePutOptions): Promise<string>;
+    put(key: string, value: string, options?: AdobeStatePutOptions): Promise<string | null>;
     /**
      * Deletes a state key-value pair
      * @param key - state key identifier
